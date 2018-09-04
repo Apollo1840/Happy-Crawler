@@ -1,0 +1,22 @@
+body {
+	background-color: #e3e3e3;
+	font-family: sans-serif;
+	width: 800px;
+}
+
+.main {
+	width: 600px;
+	margin: auto;
+	float: left;
+	background-color: #e3e3e3;
+}
+
+blockquote {
+	border: 1px solid white;
+	text-align: center;
+	margin-left: 0;
+}
+
+aside {
+	background-color: rgb(200,200,200);
+}
