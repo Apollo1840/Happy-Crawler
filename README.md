@@ -1,18 +1,22 @@
 # Happy-Crawler
 
 There are crawlers made by HC-team.
-
     
-## 1) Crawler_bbc
+### 1) bbc_crawler
+    It is good at dealing with news page.
 
-    It is a class in first_crawler.py, it is good at dealing with news page.
-
-## 2) Crawler_douban
-
-    It is a class in first_crawler.py, it is a primary tool of crawling.
-
-Another folders:
+### 2) douban_crawler
+    It is good at find the hot words.
+    
+## Another folders:
 
 ## tutorial
+    There are some learning material.
+    
+### dummy_websites
+    It is simple demonstration of html5.
+
+### material
+    Useless. It stores the sample output of the crawlers.
 
 
