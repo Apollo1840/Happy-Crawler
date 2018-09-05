@@ -1,8 +1,6 @@
 # Happy-Crawler
 
-There crawlers made by HC-team.
-
-building...
+There are crawlers made by HC-team.
 
     
 ## 1) Crawler_bbc
