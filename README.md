@@ -20,7 +20,7 @@ It is good at find the hot words.
 There are some learning material.
     
 ### dummy_websites
-It is simple demonstration of html5.
+There are some simple demonstrations of html5.
 
 ### material
 Useless. It stores the sample output of the crawlers.
