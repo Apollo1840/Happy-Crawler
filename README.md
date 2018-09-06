@@ -5,6 +5,7 @@ There are crawlers made by HC-team.
 To use the crawlers just 
         
         from xxx_crawler import xxx_crawler
+        xxx_c = xxx_crawler()
         xxx_crawler.run()
     
 ### 1) bbc_crawler
