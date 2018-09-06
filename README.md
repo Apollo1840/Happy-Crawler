@@ -6,7 +6,7 @@ To use the crawlers just
         
         from xxx_crawler import xxx_crawler
         xxx_c = xxx_crawler()
-        xxx_crawler.run()
+        xxx_c.run()
     
 ### 1) bbc_crawler
 It is good at dealing with news page.
