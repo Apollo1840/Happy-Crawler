@@ -12,7 +12,7 @@ To use the crawlers just
 It is good at dealing with news page.
 
 ### 2) douban_crawler
-It is good at find the hot words.
+It is good at finding the hot words.
     
 ## Another folders:
 
