@@ -26,26 +26,24 @@ Example:
 
 ![the sample picture](https://i.screenshot.net/28dzdb4)
 
-#### Pages and flags
+#### 2.1 Pages and flags
 
 You can adjust the pages and interested flag of words.
         
         d_c.run(num_pages=5, consider_flags=['n','nr','nrt'])  # this is default value
 
-Some basic flags are: "n" for noun，“a” for adj，“v” for verb
+Some basic flags are: "n" for noun，“a” for adj，“v” for verb. For more details, please see: https://blog.csdn.net/suibianshen2012/article/details/53487157
 
-For more details, please see: https://blog.csdn.net/suibianshen2012/article/details/53487157
-
-#### Heat calculation
+#### 2.2 Heat calculation
 
 You can also adjust the method to calculate heat, currently it supports three different method.
 
         d_c.run(include_heat=False)  # this will only consider the frequency of words.
         d_c.run(adjustment = 'log')  # this is a compromise between frequency of words and the heat of post.
 
-#### Get raw data
+#### 2.3 Get raw data
 
-douban_crawler also provide other possibilities to visualize the data.
+The douban_crawler also provide other possibilities to visualize the data.
 
         d_c.get_words_list(num_pages=5, include_heat=True)
         d_c.create_words_table(get_raw_data=True)  
