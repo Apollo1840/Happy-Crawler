@@ -13,6 +13,28 @@ It is good at dealing with news page.
 
 ### 2) douban_crawler
 It is good at finding the hot words.
+
+To use it, just
+
+        from douban_crawler import douban_crawler
+        d_c = douban_crawler()
+        d_c.run()
+
+It will crawl 5 pages of douban/blabla (https://www.douban.com/group/blabla//discussion?start=0) and save an wordCloud graph as html in material folder.
+
+You can adjust the pages and interested flag of words.
+        
+        d_c.run(num_pages=5, consider_tags=['n','nr','nrt'])  # this is default value
+
+You can also ajust the method to calculate heat, currently it supports three different method.
+
+        d_c.run(include_heat=False)  # this will only consider the frequency of words.
+        d_c.run(adjustment = 'log')  # this is a compromise between frequency of words and the heat of post.
+
+douban_crawler also provide other possibility to visualize the data.
+
+        d_c.create_words_table()
+        
     
 ## Another folders:
 
