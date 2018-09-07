@@ -86,12 +86,9 @@ class douban_crawler(basic_crawler):
                         else:
                             self.words.append([w.word, w.flag, 1])
                             
-        self.historical_post_titles.extend(self.post_titles)        
-                
-        
-    def get_words_table(self, num_pages=5, include_heat=True, adjustment=None):
-        
-        # get the raw data
+        self.historical_post_titles.extend(self.post_titles)
+
+    def get_words_list(self, num_pages=5, include_heat=True):
         self.historical_post_titles = []
         for id_page in range(num_pages):
             time.sleep(1)
@@ -101,8 +98,11 @@ class douban_crawler(basic_crawler):
             del c
             self.get_words(include_heat)
             print(id_page)
-        
         # print(self.historical_post_titles)
+                
+        
+    def create_words_table(self, num_pages=5, include_heat=True, adjustment=None):
+        self. get_words_list(num_pages, include_heat)
         
         # preprocess the raw data
         df_wl = pd.DataFrame(self.words) 
@@ -130,7 +130,7 @@ class douban_crawler(basic_crawler):
         # "n"是名词，“a”是形容词，“v”是动词，“d”是副词，“x”是非语素词
         # https://blog.csdn.net/suibianshen2012/article/details/53487157
         
-        df_wl = self.get_words_table(num_pages, include_heat, adjustment)
+        df_wl = self.create_words_table(num_pages, include_heat, adjustment)
         df_part = df_wl.loc[df_wl.flag.isin(consider_tags),:]
         df_part = df_part.loc[~df_part.words.isin(self.list_of_drop_words),:]
 
