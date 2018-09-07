@@ -160,6 +160,61 @@ def test():
         this part of program is just playing ground of the programmer
     '''
     
+    url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.0.html'
+    res = req.get(url)
+    soup = BeautifulSoup(res.text)
+    titles = soup.find_all('a', class_='detailansicht')
+    for t in titles:
+        print(t['href'])
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    def is_post_title_related(title):
+        if '慕尼黑' in title:
+            if '求' in title or '寻租' in title:
+                return False
+            else:
+                return True
+        else:
+            return False
+    
     for i in range(10):
         url = 'https://www.kaiyuan.info/forum-92-{}.html'.format(i)
         soup=BeautifulSoup(req.get(url).text, 'lxml')
@@ -167,11 +222,23 @@ def test():
         post_titles = soup.find_all('a', class_='s xst')
         # print(post_titles)
         for pt in post_titles:
-            if '慕尼黑' in pt.text and '求' not in pt.text and '寻租' not in pt.text:
+            if is_post_title_related(pt.text):
                 print(pt.text)
                 print(pt['href'])
                 print('\n')
         
+        
+        url = pt.text
+        url = 'https://www.kaiyuan.info/thread-1160790-1-1.html'
+        bc = basic_crawler(url)
+        soup = bc.soup
+        soup.prettify()
+        main_content = soup.find('td', class_='t_f').text
+        print(main_content)
+        
+        # complex situation:
+        # 1, picture
+        # 2, table 
         
     trs = tbody.find_all('tr')
         
