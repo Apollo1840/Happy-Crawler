@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Fri Sep  7 12:15:56 2018
+
+@author: zouco
+"""
+
+# -*- coding: utf-8 -*-
 '''
   todo:  add for loop， track the change of some specific words
 
@@ -22,12 +29,12 @@ from pyecharts import WordCloud
 
 import time
 
-class douban_crawler(basic_crawler):
+class rent_crawler(basic_crawler):
     
     
     def __init__(self):
-        url = 'https://www.douban.com/group/blabla//discussion?start=0'
-        super(douban_crawler, self).__init__(url)
+        url = 'https://www.kaiyuan.info/forum-92-1.html'
+        super(rent_crawler, self).__init__(url)
         self.temp_soup = None
         self.post_titles = []
         self.historical_post_titles = []
@@ -101,16 +108,16 @@ class douban_crawler(basic_crawler):
         # print(self.historical_post_titles)
                 
         
-    def create_words_table(self, adjustment=None, get_raw_data=False): 
+    def create_words_table(self, num_pages=5, include_heat=True, adjustment=None): 
         # preprocess the raw data
         df_wl = pd.DataFrame(self.words) 
         df_wl.columns = ['words','flag','heat']
         df_wl.heat = df_wl.heat.astype('float')
         
-        if get_raw_data:
-            df_wl.to_csv('material/raw_data.csv')
+        # df_wl.to_csv('raw_data.csv')
         
-        if adjustment=='log':
+        if include_heat:
+            if adjustment=='log':
                 df_wl.heat = np.log(df_wl.heat)
         
         # df_wl.to_csv('raw_data2.csv')
@@ -129,7 +136,7 @@ class douban_crawler(basic_crawler):
         # https://blog.csdn.net/suibianshen2012/article/details/53487157
         
         self. get_words_list(num_pages, include_heat)
-        df_wl = self.create_words_table(adjustment)
+        df_wl = self.create_words_table(num_pages, include_heat, adjustment)
         df_part = df_wl.loc[df_wl.flag.isin(consider_tags),:]
         df_part = df_part.loc[~df_part.words.isin(self.list_of_drop_words),:]
 
@@ -153,14 +160,19 @@ def test():
         this part of program is just playing ground of the programmer
     '''
     
-    
-    url = 'https://www.douban.com/group/blabla//discussion?start=0'
-    soup=BeautifulSoup(req.get(url).text, 'lxml')
-    
-    post_titles = []
-    post_heat = []
-    words_h = []
-    tbody = soup.find('table', class_='olt')
+    for i in range(10):
+        url = 'https://www.kaiyuan.info/forum-92-{}.html'.format(i)
+        soup=BeautifulSoup(req.get(url).text, 'lxml')
+        # print(soup.prettify())
+        post_titles = soup.find_all('a', class_='s xst')
+        # print(post_titles)
+        for pt in post_titles:
+            if '慕尼黑' in pt.text and '求' not in pt.text and '寻租' not in pt.text:
+                print(pt.text)
+                print(pt['href'])
+                print('\n')
+        
+        
     trs = tbody.find_all('tr')
         
     for tr in trs[1:]:
