@@ -31,10 +31,12 @@ You can also ajust the method to calculate heat, currently it supports three dif
         d_c.run(include_heat=False)  # this will only consider the frequency of words.
         d_c.run(adjustment = 'log')  # this is a compromise between frequency of words and the heat of post.
 
-douban_crawler also provide other possibility to visualize the data.
+douban_crawler also provide other possibilities to visualize the data.
 
-        d_c.create_words_table()
-        
+        d_c.get_words_list(num_pages=5, include_heat=True)
+        d_c.create_words_table(get_raw_data=True)  
+
+It will output a csv file to material folder. This DataFrame has three columns: word, flag, heat. The heat is the heat of the origin post.
     
 ## Another folders:
 
