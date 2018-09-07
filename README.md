@@ -39,7 +39,7 @@ Some basic flags are: "n" for noun，“a” for adj，“v” for verb. For mor
 You can also adjust the method to calculate heat, currently it supports three different method.
 
         d_c.run(include_heat=False)  # this will only consider the frequency of words.
-        d_c.run(adjustment = 'log')  # this is a compromise between frequency of words and the heat of post.
+        d_c.run(adjustment = 'log')  # this is a compromise between frequency of words and the heat of post. Default is None.
 
 #### 2.3 Get raw data
 
