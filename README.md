@@ -22,7 +22,7 @@ To use it, just
 
 It will crawl 5 pages of douban/blabla (https://www.douban.com/group/blabla//discussion?start=0) and save an wordCloud graph as html in material folder.
 
-![WordCloud](https://screenshot.net/zh/28dzdb4)
+![the sample picture](https://i.screenshot.net/28dzdb4)
 
 
 You can adjust the pages and interested flag of words.
