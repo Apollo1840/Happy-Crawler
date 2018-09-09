@@ -73,7 +73,7 @@ If you want to access the DataFrame:
         
         w_c = wg_crawler()
         w_a = wg_analyse(w_c)   # to analyse the data, we need to first connect analyser to the crawler 
-        w_a.size_price()  # It will store a image to material folder, you can set the path. with path='...'
+        w_a.size_price()  # It will store an image to material folder, you can set the path. with path='...'
         
 The figure will look like:        
 ![the sample picture](https://i.screenshot.net/xq5w2f4)
