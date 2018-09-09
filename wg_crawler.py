@@ -22,6 +22,7 @@ Created on Fri Sep  7 21:54:26 2018
 import pandas as pd
 from basic_crawler import basic_crawler
 
+import matplotlib.pyplot as plt
 import time
 
 
@@ -32,7 +33,7 @@ class wg_crawler():
         '''
             it will update the  DataFrame which has three column: ID of the post, name of the room, link to this room
         '''
-        self.df = pd.DataFrame([], columns=['title', 'link', 'size', 'price'])
+        self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price'])
         titles = []
         links = []
         sizes = []
@@ -42,11 +43,11 @@ class wg_crawler():
             num_pages = 10  # todo: get the data from web
         
         for i in range(num_pages):
-            time.sleep(8)
+            
             url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)
             
             bc=basic_crawler(url)
-            soup = bc.soup 
+            soup = bc.soup   
             posts = soup.find_all('div',class_='offer_list_item')
             
             for p in posts:
@@ -60,11 +61,14 @@ class wg_crawler():
                 prices.append(price)
             
             print('on page {} ... '.format(i))
+            time.sleep(8) # this is to avoid being catch
             
         self.df.title = titles
         self.df.link = links
-        self.df.size = sizes
+        self.df.room_size = sizes
+        self.df.room_size = self.df.room_size.astype('float')
         self.df.price = prices
+        self.df.price = self.df.price.astype('float')
         
     @staticmethod    
     def detail_info2size_and_price(detail_info):
@@ -83,6 +87,7 @@ class wg_crawler():
         xxx = []
         
         for url in self.df.link:
+            time.sleep(1)
             bc = basic_crawler(url)
             soup = bc.soup
              
@@ -96,8 +101,6 @@ class wg_crawler():
         pass
             
 
-        
-        
     
     
     def run(self, num_pages=10):
@@ -105,11 +108,37 @@ class wg_crawler():
         self.get_surface_data(num_pages)
         # self.get_preis()
         
-        self.df.to_csv('material/The_wg_information_in_munich.csv'， encoding='utf-8')
+        self.df.to_csv('material/The_wg_information_in_munich.csv', encoding='utf-8')
         
         
 
-
+class wg_analyse():
+    df = None
+    
+    def __init__(self, wg_crawler):
+        self.df = wg_crawler.df
+        plt.style.use('ggplot')
+    
+    def size_price(self, path = None):
+        plt.plot(self.df.room_size, self.df.price, 'o')
+        
+        plt.xlabel('Room size (m²)')
+        plt.ylabel('Price (euro)')
+        title = 'Relationship between room size and price'
+        plt.title(title)
+        if path:
+            plt.savefig(path)
+        else:
+            plt.savefig('material/{}.jpg'.format(title))
+        
+        plt.show()
+        
+        
+        
+        
+        
+        
+        
 
 
 
@@ -163,6 +192,8 @@ def test():
 
 if __name__ == '__main__':
     w_c = wg_crawler()
-    w_c.run(num_pages=1)
+    w_c.run(num_pages=2)
+    w_a = wg_analyse(w_c)
+    w_a.size_price()
     
     

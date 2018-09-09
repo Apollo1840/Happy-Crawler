@@ -1,21 +1,41 @@
-,title,link,size,price
-0,22 m² Zimmer tage-oder wochenweise,wg-zimmer-in-Muenchen-Obergiesing.3210129.html,22,34
-1,Möbliertes Zimmer in Dreifamilienhaus,wg-zimmer-in-Muenchen-Feldmoching.6602782.html,16,550
-2,Zimmer in München-Freiham nahe S-Bahn,wg-zimmer-in-Muenchen-Freiham.6574025.html,18,550
-3,Teilmöbliertes Zimmer in Penthouse WG,wg-zimmer-in-Muenchen-Milbertshofen-Am-Hart.6394105.html,12,560
-4,2er-Mädels-WG sucht MitbewohnerIn,wg-zimmer-in-Muenchen-Feldmoching-Hasenbergl.6916663.html,16,550
-5,"Ideal f.Praktikum b.BMW/MAN/MTU, möbliertes Zi.mit Miniküche+VDSL",wg-zimmer-in-Muenchen-Milbertshofen-Am-Hart.1834610.html,15,697
-6,Zimmer in Familienwohnung gegen Kinderbetreuung,wg-zimmer-in-Muenchen-10-Min--von-Giesing-Bf-U2-und-S-Bahn.6914493.html,11,1
-7,Komplett möbliertes Zimmer/ fully furnished 2er WG,wg-zimmer-in-Muenchen-Bogenhausen.5449967.html,22,848
-8,Möbliertes Zimmer / furnished room for shorttime / monthly  rent,wg-zimmer-in-Muenchen-Bogenhausen.4635567.html,25,849
-9,"Schönes, ruhiges möbliertes Zimmer / fully furnishe room",wg-zimmer-in-Muenchen-Bogenhausen.6308628.html,22,849
-10,Möbliertes Zimmer/ furnished room available,wg-zimmer-in-Muenchen-Bogenhausen.6509938.html,20,849
-11,top WG zimmer zu vermieten Nähe München,wg-zimmer-in-Muenchen-top-WG-zimmer.4061496.html,15,450
-12,Möbliertes Zimmer / fully furnished room,wg-zimmer-in-Muenchen-Bogenhausen.6170152.html,22,848
-13,Möbliertes Zimmer in München,wg-zimmer-in-Muenchen-Berg-am-Laim.6257046.html,10,350
-14,"Möbliertes Zimmer in netter 9er  Haus- WG, zentral U3-Bahn",wg-zimmer-in-Muenchen-Solln.6900218.html,16,550
-15,1 Zimmer 42 qm in Schwabing,wg-zimmer-in-Muenchen-Schwabing-West.6904256.html,42,700
-16,Möbliertes Zimmer oder auf Wunsch gerne auch unmöbliert,wg-zimmer-in-Muenchen-Schwanthalerhoehe-Laim.6915413.html,16,840
-17,18 qm gr. helles Zimmer mit eigenem Bad 2 Min. zur U1/FC BAYERN,wg-zimmer-in-Muenchen-Untergiesing-Harlaching.1811249.html,18,685
-18,Alles was man braucht in der Mitte des Lebens,wg-zimmer-in-Muenchen-Altstadt-Lehel.5194186.html,20,870
-19,[All Inklusiv] Zimmer frei in neues RMH nähe Moosach (near to MAN/MTU/BMW),wg-zimmer-in-Muenchen-Feldmoching-Hasenbergl.6903852.html,15,800
+,title,link,room_size,price
+0,"Möbliertes 14qm zimmer in netter 3er WG, zentral",wg-zimmer-in-Muenchen-Maxvorstadt.6916910.html,14.0,650.0
+1,"near bonner platz // cozy room minimum 2, maximum 5 nights * NO long term, sorry",wg-zimmer-in-Muenchen-Schwabing-West.6914767.html,15.0,33.0
+2,Möbliertes Zimmer in 2er WG befirstet,wg-zimmer-in-Muenchen-Ludwigsvorstadt-Isarvorstadt.6914199.html,16.0,400.0
+3,WG - Zimmer in München-Aubing,wg-zimmer-in-Muenchen-Aubing-Lochhausen-Langwied.6916904.html,14.0,560.0
+4,one room - 9m2 with a panaroma view near U-Aidenbachstr.,wg-zimmer-in-Muenchen-Thalkirchen-Obersendling.3712500.html,9.0,330.0
+5,Möbliertes 15qm Zimmer in 3er WG,wg-zimmer-in-Muenchen-Schwanthalerhoehe-Laim.6608342.html,16.0,365.0
+6,[All Inklusiv] Zimmer frei in neues RMH nähe Moosach (near to MAN/MTU/BMW),wg-zimmer-in-Muenchen-Feldmoching-Hasenbergl.6903852.html,15.0,800.0
+7,FURNISHED AlRB'NB ► #balcony #loftbed @baldeplatz @wittelsbacherbrücke @kolumbusplatz @fraunhoferstraße @flaucher @rosengarten,wg-zimmer-in-Muenchen-Au-Haidhausen.6879667.html,18.0,630.0
+8,Helles Zimmer in Bogenhausen in netter WG,wg-zimmer-in-Muenchen-Bogenhausen.6916847.html,13.0,550.0
+9,FURNISHED AlRB'NB ► #balcony #loftbed @baldeplatz @wittelsbacherbrücke @kolumbusplatz @fraunhoferstraße @flaucher @rosengarten,wg-zimmer-in-Muenchen-Au-Haidhausen.6902301.html,18.0,25.0
+10,Zimmer in netter 4er WG ab 01.10.18 frei!,wg-zimmer-in-Muenchen-Westend-Schwanthalerhoehe.6915938.html,11.0,300.0
+11,FURNISHED AlRB'NB ► #balcony #loftbed @baldeplatz @wittelsbacherbrücke @kolumbusplatz @fraunhoferstraße @flaucher @rosengarten,wg-zimmer-in-Muenchen-Au-Haidhausen.6902256.html,18.0,630.0
+12,"Schönes, helles Zimmer in Bogenhausen zu vermieten",wg-zimmer-in-Muenchen-Bogenhausen.6873556.html,23.0,650.0
+13,"Mittendrin,z. Stadt 33Min.Hbf u. Bergen, See (5Min.), im schönsten Ort Bayern`s",wg-zimmer-in-Muenchen-Bernried.5365264.html,20.0,490.0
+14,top WG zimmer zu vermieten Nähe München,wg-zimmer-in-Muenchen-top-WG-zimmer.4061496.html,15.0,450.0
+15,"Am Starnberger See ist eine 2er WG - Z. frei, 35qm in 110qm gr. Wohnung",wg-zimmer-in-Muenchen-Am-Starnberger-See.5406878.html,35.0,680.0
+16,Möbliertes 25qm Zimmer mit eigenem Bad & Balkon sowie Putzmann in sonniger Wohnung,wg-zimmer-in-Muenchen-Pasing-Obermenzing.5551040.html,25.0,1200.0
+17,Großes Zimmer zur Untermiete – ideal für Praktikanten,wg-zimmer-in-Muenchen-Neuhausen-Nymphenburg.6916751.html,29.0,600.0
+18,9 freie Mobilisierte Studenten WG-Zimmer in München(Studenten bevozug!!),wg-zimmer-in-Muenchen-Muenchen.6833714.html,8.0,550.0
+19,22 m² Zimmer tage-oder wochenweise,wg-zimmer-in-Muenchen-Obergiesing.3210129.html,22.0,34.0
+20,Möbliertes Zimmer in Dreifamilienhaus,wg-zimmer-in-Muenchen-Feldmoching.6602782.html,16.0,550.0
+21,Zimmer in München-Freiham nahe S-Bahn,wg-zimmer-in-Muenchen-Freiham.6574025.html,18.0,550.0
+22,Teilmöbliertes Zimmer in Penthouse WG,wg-zimmer-in-Muenchen-Milbertshofen-Am-Hart.6394105.html,12.0,560.0
+23,2er-Mädels-WG sucht MitbewohnerIn,wg-zimmer-in-Muenchen-Feldmoching-Hasenbergl.6916663.html,16.0,550.0
+24,"Ideal f.Praktikum b.BMW/MAN/MTU, möbliertes Zi.mit Miniküche+VDSL",wg-zimmer-in-Muenchen-Milbertshofen-Am-Hart.1834610.html,15.0,697.0
+25,Zimmer in Familienwohnung gegen Kinderbetreuung,wg-zimmer-in-Muenchen-10-Min--von-Giesing-Bf-U2-und-S-Bahn.6914493.html,11.0,1.0
+26,Komplett möbliertes Zimmer/ fully furnished 2er WG,wg-zimmer-in-Muenchen-Bogenhausen.5449967.html,22.0,848.0
+27,Möbliertes Zimmer / furnished room for shorttime / monthly  rent,wg-zimmer-in-Muenchen-Bogenhausen.4635567.html,25.0,849.0
+28,"Schönes, ruhiges möbliertes Zimmer / fully furnishe room",wg-zimmer-in-Muenchen-Bogenhausen.6308628.html,22.0,849.0
+29,Möbliertes Zimmer/ furnished room available,wg-zimmer-in-Muenchen-Bogenhausen.6509938.html,20.0,849.0
+30,Möbliertes Zimmer / fully furnished room,wg-zimmer-in-Muenchen-Bogenhausen.6170152.html,22.0,848.0
+31,Möbliertes Zimmer in München,wg-zimmer-in-Muenchen-Berg-am-Laim.6257046.html,10.0,350.0
+32,"Möbliertes Zimmer in netter 9er  Haus- WG, zentral U3-Bahn",wg-zimmer-in-Muenchen-Solln.6900218.html,16.0,550.0
+33,1 Zimmer 42 qm in Schwabing,wg-zimmer-in-Muenchen-Schwabing-West.6904256.html,42.0,700.0
+34,Möbliertes Zimmer oder auf Wunsch gerne auch unmöbliert,wg-zimmer-in-Muenchen-Schwanthalerhoehe-Laim.6915413.html,16.0,840.0
+35,18 qm gr. helles Zimmer mit eigenem Bad 2 Min. zur U1/FC BAYERN,wg-zimmer-in-Muenchen-Untergiesing-Harlaching.1811249.html,18.0,685.0
+36,Alles was man braucht in der Mitte des Lebens,wg-zimmer-in-Muenchen-Altstadt-Lehel.5194186.html,20.0,870.0
+37,AB SOFORT 1 Monat Möbliertes Altbau WG Zimmer zur Untermiete,wg-zimmer-in-Muenchen-Maxvorstadt.6915852.html,16.0,650.0
+38,Erstbezug!: 20qm in 120qm kernsaniertem Altbau inkl. Balkon in zentralster Lage,wg-zimmer-in-Muenchen-Ludwigsvorstadt-Isarvorstadt.6910334.html,20.0,850.0
+39,Möbliertes Zimmer in WG nähe Olympiapark / BMW Zentrale ab 15.9. zu vermieten.,wg-zimmer-in-Muenchen-Lerchenau.6916547.html,17.0,650.0
