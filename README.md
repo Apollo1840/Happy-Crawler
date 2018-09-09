@@ -1,6 +1,6 @@
 # Happy-Crawler
 
-There are crawlers made by HC-team.
+There are crawlers made by HC-team. If you like them or want to see more upgrade of them, please press Star or join us (contact: zoucongyu1993@hotmail.com, wechat:zoucongyu1109) at the right up corner, thank you!
 
 To use the crawlers just 
         
@@ -49,7 +49,11 @@ The douban_crawler also provide other possibilities to visualize the data.
         d_c.create_words_table(get_raw_data=True)  
 
 It will output a csv file to material folder. This DataFrame has three columns: word, flag, heat. The heat is the heat of the origin post.
-    
+
+## Main contributors:
+Apollo1840
+
+
 ## Another folders:
 
 ### tutorial
