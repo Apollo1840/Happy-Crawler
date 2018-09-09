@@ -6,6 +6,7 @@ Created on Wed Sep  5 17:59:23 2018
 """
 import requests
 from bs4 import BeautifulSoup
+import os
 
 class basic_crawler():
     '''this class will be initialize with a url.
@@ -28,6 +29,12 @@ class basic_crawler():
     @property
     def soup(self):
         return BeautifulSoup(self.html, 'lxml')
+    
+    def save_html(self, name='Page'):
+        self.response.encoding='utf-8'
+        with open('material/page.txt','w', encoding="utf-8") as f:
+            f.write(self.response.text)
+        os.rename('material/page.txt','material/{}.html'.format(name))
     
     def run(self):
         

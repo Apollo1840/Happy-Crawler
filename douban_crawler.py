@@ -123,14 +123,14 @@ class douban_crawler(basic_crawler):
         
    
     
-    def run(self, num_pages=5, consider_tags=['n','nr','nrt'], include_heat=True, adjustment=None):  
+    def run(self, num_pages=5, consider_flags=['n','nr','nrt'], include_heat=True, adjustment=None):  
         
         # "n"是名词，“a”是形容词，“v”是动词，“d”是副词，“x”是非语素词
         # https://blog.csdn.net/suibianshen2012/article/details/53487157
         
         self. get_words_list(num_pages, include_heat)
         df_wl = self.create_words_table(adjustment)
-        df_part = df_wl.loc[df_wl.flag.isin(consider_tags),:]
+        df_part = df_wl.loc[df_wl.flag.isin(consider_flags),:]
         df_part = df_part.loc[~df_part.words.isin(self.list_of_drop_words),:]
 
         print(df_part.shape[0])

@@ -2,7 +2,7 @@
 """
 Created on Fri Sep  7 21:54:26 2018
 
-@author: zoucongyu
+@author: zouco
 """
 
 
@@ -22,6 +22,7 @@ Created on Fri Sep  7 21:54:26 2018
 import pandas as pd
 from basic_crawler import basic_crawler
 
+import time
 
 
 class wg_crawler():
@@ -31,30 +32,55 @@ class wg_crawler():
         '''
             it will update the  DataFrame which has three column: ID of the post, name of the room, link to this room
         '''
-        self.df = pd.DataFrame([], columns=['ID','name','link'])
+        self.df = pd.DataFrame([], columns=['title', 'link', 'size', 'price'])
+        titles = []
+        links = []
+        sizes = []
+        prices = []
         
         if num_pages=='auto':
             num_pages = 10  # todo: get the data from web
         
         for i in range(num_pages):
+            time.sleep(8)
             url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)
             
             bc=basic_crawler(url)
             soup = bc.soup 
-            titles = soup.find_all('a', class_='detailansicht') # todo: from now on, the code is wrong
-            for t in titles: 
-                self.df.ID.append(1)
-                self.df.name.append('noname')
-                self.df.link.append(t['href'])  # todo : this need to correctify, 因为链接重复了
-
-
-    def get_preis(self):
+            posts = soup.find_all('div',class_='offer_list_item')
+            
+            for p in posts:
+                title = p.find('h3', class_='truncate_title')
+                titles.append(title.text.strip())
+                links.append(title.a['href'])
+                
+                detail = p.find('div', class_= 'detail-size-price-wrapper').text
+                size, price = wg_crawler.detail_info2size_and_price(detail)
+                sizes.append(size)
+                prices.append(price)
+            
+            print('on page {} ... '.format(i))
+            
+        self.df.title = titles
+        self.df.link = links
+        self.df.size = sizes
+        self.df.price = prices
+        
+    @staticmethod    
+    def detail_info2size_and_price(detail_info):
+        si = detail_info.split('|')
+        size = str.split(str.strip(si[0]),' ')[0]
+        price = str.split(str.strip(si[1]),' ')[0]
+        return size, price
+    
+    # to do 
+    def get_xxx(self):
         '''
-            This is always been called after the get_surface_data, so we have df with 3 columns:
-            ID of the post, name of the room, link to this room
-            After this function been called, a new column will be added to the data frame - preis
+            This is always been called after the get_surface_data, so we have df with 4 columns:
+            name of the room, link to this room, size of the room and price of the room
+            After this function been called, a new column will be added to the data frame - xxx
         '''
-        self.df['preis'] = None
+        xxx = []
         
         for url in self.df.link:
             bc = basic_crawler(url)
@@ -62,7 +88,9 @@ class wg_crawler():
              
             # ... #
             
-            self.df['preis'].append(100)
+            xxx.append(100)
+            
+        self.df['xxx'] = xxx
             
     def get_loc(self):
         pass
@@ -75,9 +103,9 @@ class wg_crawler():
     def run(self, num_pages=10):
         
         self.get_surface_data(num_pages)
-        self.get_preis()
+        # self.get_preis()
         
-        self.df.to_csv('The_wg_information_in_munich.csv')
+        self.df.to_csv('material/The_wg_information_in_munich.csv'， encoding='utf-8')
         
         
 
@@ -91,19 +119,38 @@ def test():
         here you can test your program.
     '''
     
+    'panel panel-default  list-details-ad-border offer_list_item'
+    
     # this part is for surface page
-    df = pd.DataFrame([], columns=['ID','name','link'])
+    def detail_info2size_and_price(detail_info):
+        si = detail_info.split('|')
+        size = str.split(str.strip(si[0]),' ')[0]
+        price = str.split(str.strip(si[1]),' ')[0]
+        return size, price
+    
+    
+    df = pd.DataFrame([], columns=['name','link'])
     url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.1.html'
     bc=basic_crawler(url)
-    soup = bc.soup 
-    titles = soup.find_all('a', class_='detailansicht') # todo: from now on, the code is wrong
-    for t in titles: 
-        df.link.append(t['href'])  # todo : this need to correctify, 因为链接重复了
+    soup = bc.soup
+    
+    
+    titles = []
+    links = []
+    sizes = []
+    prices = []
+    posts = soup.find_all('div',class_='offer_list_item')
+    for p in posts:
+        title = p.find('h3', class_='truncate_title')
+        titles.append(title.text.strip())
+        links.append(title.a['href'])
+        
+        detail = p.find('div', class_= 'detail-size-price-wrapper').text
+        size, price = detail_info2size_and_price(detail)
+        sizes.append(size)
+        prices.append(price)
    
     
-    
-    
-
     # this part is for detail page (the link in original dataframe)
     url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen-Trudering.3278644.html'
     bc=basic_crawler(url)
@@ -116,6 +163,6 @@ def test():
 
 if __name__ == '__main__':
     w_c = wg_crawler()
-    w_c.run()
+    w_c.run(num_pages=1)
     
     
