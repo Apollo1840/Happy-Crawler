@@ -87,7 +87,7 @@ Apollo1840
 ### tutorial
 There are some learning material.
 
-A very important tool I often use is Pandas, tutorial about Pandas is in another repo of me: Data-Analysis-Tools
+(A very important tool I often use is Pandas, tutorial about Pandas is in another repo of me: Data-Analysis-Tools)
 
 The coming parts are:
 * how to login
