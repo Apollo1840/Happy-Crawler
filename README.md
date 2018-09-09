@@ -7,7 +7,10 @@ To use the crawlers just
         from xxx_crawler import xxx_crawler
         xxx_c = xxx_crawler()
         xxx_c.run()
-    
+
+Please be careful:
+Those crawlers are only designed for research purposes, no commercial usage is allowed. The user should take the fully responsibility for illegal use and intented attack.
+
 ### 1) bbc_crawler
 It is good at dealing with news page.
 
