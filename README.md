@@ -90,9 +90,9 @@ There are some learning material.
 A very important tool I often use is Pandas, tutorial about Pandas is in another repo of me: Data-Analysis-Tools
 
 The coming parts are:
-..* how to login
-..* how to use req.pull
-..* more about BeautifulSoup
+⋅⋅* how to login
+⋅⋅* how to use req.pull
+⋅⋅* more about BeautifulSoup
 
     
 ### dummy_websites
