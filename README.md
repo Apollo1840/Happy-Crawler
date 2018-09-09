@@ -71,7 +71,7 @@ If you want to access the DataFrame:
         
 #### Relationship between room size and price
         
-        w_c = wg_cralwer()
+        w_c = wg_crawler()
         w_a = wg_analyse(w_c)   # to analyse the data, we need to first connect analyser to the crawler 
         w_a.size_price()  # It will store a image to material folder, you can set the path. with path='...'
         
