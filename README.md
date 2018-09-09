@@ -69,7 +69,7 @@ If you want to access the DataFrame:
         the_dataframe = w_c.df
 
         
-#### Relationship between room size and price
+#### 3.1 Relationship between room size and price
         
         w_c = wg_crawler()
         w_a = wg_analyse(w_c)   # to analyse the data, we need to first connect analyser to the crawler 
@@ -86,6 +86,11 @@ Apollo1840
 
 ### tutorial
 There are some learning material.
+The coming parts are:
+*how to login
+*how to use req.pull
+*more about BeautifulSoup
+
     
 ### dummy_websites
 There are some simple demonstrations of html5.
