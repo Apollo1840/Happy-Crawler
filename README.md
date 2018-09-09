@@ -53,6 +53,31 @@ The douban_crawler also provide other possibilities to visualize the data.
 
 It will output a csv file to material folder. This DataFrame has three columns: word, flag, heat. The heat is the heat of the origin post.
 
+### 3) wg_crawler
+It will scrape 10 pages of the website wg_gesucht.de with the filter be set as {Munich, WG}, then get a dataframe which contains information about the WG ans store it in the material folder name as 'The_wg_information_in_munich'.
+
+The DataFrame contains 4 columns: name, link, room_size, price
+
+To use it, just:
+        
+        from wg_crawler import wg_crawler
+        w_c = wg_cralwer()
+        w_c.run()
+
+If you want to access the DataFrame:
+
+        the_dataframe = w_c.df
+
+        
+#### Relationship between room size and price
+        
+        w_c = wg_cralwer()
+        w_a = wg_analyse(w_c)   # to analyse the data, we need to first connect analyser to the crawler 
+        w_a.size_price()  # It will store a image to material folder, you can set the path. with path='...'
+        
+The figure will look like:        
+![the sample picture](https://i.screenshot.net/xq5w2f4)
+
 ## Main contributors:
 Apollo1840
 
