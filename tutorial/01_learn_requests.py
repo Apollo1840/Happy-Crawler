@@ -16,6 +16,13 @@ response = requests.get(url,headers = hea)
 response.encoding = 'utf-8' # admit chinese
 print(response.text)
 
+if response.status_code == 200:
+    print('successful!')
+elif response.status_code == 404:
+    print('not found!')
+    
+
+
 
 ##############################################################################
 # requests.post
