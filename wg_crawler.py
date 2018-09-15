@@ -81,7 +81,12 @@ class wg_crawler():
         price = str.split(str.strip(si[1]),' ')[0]
         return size, price
 
-   
+    
+    def load_surface_data(self, path):
+        self.df = pd.read_csv(path)
+    
+    
+    
     # to do 
     def get_details(self):
         '''
@@ -156,7 +161,8 @@ class wg_crawler():
     def get_loc(self):
         pass
             
-
+    
+    
     
     
     def run(self, num_pages=10):
@@ -271,7 +277,12 @@ def test():
 
 if __name__ == '__main__':
     w_c = wg_crawler()
-    w_c.run(num_pages=51)
+    w_c.run(num_pages=1)
+    # w_c.load_surface_data('material/The_wg_information_in_munich_5.csv')
+    w_c.get_details()
+    
+    
+    
     
     w_a = wg_analyse(w_c)
     w_a.size_price()
