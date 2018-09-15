@@ -18,7 +18,7 @@ Created on Fri Sep  7 21:54:26 2018
 
 ''' 
 
-
+import numpy as np
 import pandas as pd
 from basic_crawler import basic_crawler
 
@@ -39,6 +39,7 @@ class wg_crawler():
         sizes = []
         prices = []
         
+        self.num_pages = num_pages
         if num_pages=='auto':
             num_pages = 10  # todo: get the data from web
         
@@ -48,12 +49,15 @@ class wg_crawler():
             
             bc=basic_crawler(url)
             soup = bc.soup   
+            # print(bc.response.status_code)
+            # print(bc.soup.prettify())
+            
             posts = soup.find_all('div',class_='offer_list_item')
             
             for p in posts:
                 title = p.find('h3', class_='truncate_title')
                 titles.append(title.text.strip())
-                links.append(title.a['href'])
+                links.append('https://www.wg-gesucht.de/' + title.a['href'])
                 
                 detail = p.find('div', class_= 'detail-size-price-wrapper').text
                 size, price = wg_crawler.detail_info2size_and_price(detail)
@@ -61,7 +65,7 @@ class wg_crawler():
                 prices.append(price)
             
             print('on page {} ... '.format(i))
-            time.sleep(8) # this is to avoid being catch
+            time.sleep(8) # this is to avoid being catch 
             
         self.df.title = titles
         self.df.link = links
@@ -76,27 +80,79 @@ class wg_crawler():
         size = str.split(str.strip(si[0]),' ')[0]
         price = str.split(str.strip(si[1]),' ')[0]
         return size, price
-    
+
+   
     # to do 
-    def get_xxx(self):
+    def get_details(self):
         '''
             This is always been called after the get_surface_data, so we have df with 4 columns:
             name of the room, link to this room, size of the room and price of the room
             After this function been called, a new column will be added to the data frame - xxx
         '''
-        xxx = []
+        cautions = []
+        startdates = []
         
+        i = 0
         for url in self.df.link:
-            time.sleep(1)
+            time.sleep(5)
             bc = basic_crawler(url)
-            soup = bc.soup
-             
-            # ... #
             
-            xxx.append(100)
+            if bc.response.status_code == 200: 
+                soup = bc.soup            
+                
+                # get caution
+                caution = wg_crawler.get_caution_from_soup(soup)
+                
+                # get starttime
+                startdate = wg_crawler.get_startdate_from_soup(soup)
+                
+            else:
+                caution = -1
+                startdate = -1
             
-        self.df['xxx'] = xxx
+            cautions.append(caution)
+            startdates.append(startdate)
             
+            i = i + 1
+            print(i)
+        
+        print(self.df.shape[0])
+        print(len(cautions))
+        print(len(startdates))
+        
+        self.df['caution'] = cautions
+        self.df['startdate'] = startdates
+    
+    @staticmethod    
+    def get_caution_from_soup(soup):
+        table = soup.find('table')
+        if table is None:
+            return -1
+                
+        for row in table.find_all('tr'):
+            if str.strip(row.find_all('td')[0].text) == 'Kaution:':
+                caution = str.strip(row.find_all('td')[1].text)
+                caution = float(caution[:-1])
+                return caution
+            
+        return -2
+                
+            
+    @staticmethod    
+    def get_startdate_from_soup(soup):
+        strs = str.split(soup.find('div', class_= 'col-sm-3').p.text, ':')
+        if strs is None:
+            return 'Error in page'
+        
+        if str.strip(strs[0])=='frei ab':
+            strs2 = str.split(str.strip(strs[1]), '\n')
+            starttime = str.strip(strs2[0])
+            return starttime
+        else:
+            return 'Not format'
+                
+        
+    
     def get_loc(self):
         pass
             
@@ -107,8 +163,9 @@ class wg_crawler():
         
         self.get_surface_data(num_pages)
         # self.get_preis()
+        # self.get_caution()
         
-        self.df.to_csv('material/The_wg_information_in_munich.csv', encoding='utf-8')
+        self.df.to_csv('material/The_wg_information_in_munich_{}.csv'.format(self.num_pages), encoding='utf-8')
         
         
 
@@ -139,7 +196,6 @@ class wg_analyse():
         
         
         
-
 
 
 
@@ -182,18 +238,47 @@ def test():
     
     # this part is for detail page (the link in original dataframe)
     url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen-Trudering.3278644.html'
+    url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen-Schwabing-West.6873455.html'
     bc=basic_crawler(url)
     soup = bc.soup
     
-        
+    address = soup.select('div.col-sm-4.mb10 > a')
+    print(address)
+    
+    strs = str.split(soup.find('div', class_= 'col-sm-3').p.text, ':')
+    if str.strip(strs[0])=='frei ab':
+        strs2 = str.split(str.strip(strs[1]), '\n')
+        starttime = str.strip(strs2[0])
+        print(starttime)
+
+    
+    
+    table = soup.find('table')
+    table
+    for row in table.find_all('tr'):
+        if str.strip(row.find_all('td')[0].text) == 'Kaution:':
+            caution = str.strip(row.find_all('td')[1].text)
+            caution = float(caution[:-1])
+            print(caution)
+            
+    
+    
+    
+#    table > tbody > tr:nth-child(4) > td:nth-child(1)'
 
 
 
 
 if __name__ == '__main__':
     w_c = wg_crawler()
-    w_c.run(num_pages=2)
+    w_c.run(num_pages=51)
+    
     w_a = wg_analyse(w_c)
     w_a.size_price()
+    
+    
+    
+    
+    
     
     
