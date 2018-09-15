@@ -20,6 +20,7 @@ Created on Fri Sep  7 21:54:26 2018
 
 import numpy as np
 import pandas as pd
+import re
 from basic_crawler import basic_crawler
 
 import matplotlib.pyplot as plt
@@ -84,6 +85,10 @@ class wg_crawler():
     
     def load_surface_data(self, path):
         self.df = pd.read_csv(path)
+        
+    
+    def save_data(self, path):
+        
     
     
     
@@ -96,37 +101,47 @@ class wg_crawler():
         '''
         cautions = []
         startdates = []
+        addresses = []
+        zipcodes = []
         
         i = 0
         for url in self.df.link:
             time.sleep(5)
             bc = basic_crawler(url)
+            soup = bc.soup
             
-            if bc.response.status_code == 200: 
-                soup = bc.soup            
-                
+            if bc.response.status_code == 200 and soup is not None: 
+                                          
                 # get caution
                 caution = wg_crawler.get_caution_from_soup(soup)
                 
                 # get starttime
                 startdate = wg_crawler.get_startdate_from_soup(soup)
                 
+                # get address and zipcode
+                address, zipcode = wg_crawler.get_addr_zip_from_soup(soup)
+                
             else:
-                caution = -1
-                startdate = -1
+                caution = None
+                startdate = None
+                address = None
+                zipcode = None
+                
+                
+                
             
             cautions.append(caution)
             startdates.append(startdate)
+            addresses.append(address)
+            zipcodes.append(zipcode)
             
             i = i + 1
             print(i)
         
-        print(self.df.shape[0])
-        print(len(cautions))
-        print(len(startdates))
-        
         self.df['caution'] = cautions
         self.df['startdate'] = startdates
+        self.df['address'] = address
+        self.df['zipcode'] = zipcodes
     
     @staticmethod    
     def get_caution_from_soup(soup):
@@ -156,7 +171,41 @@ class wg_crawler():
         else:
             return 'Not format'
                 
+    
+    
+    @staticmethod
+    def get_addr_zip_from_soup(soup):
         
+        addressDiv = soup.find('div', class_='mb10')
+        addressContent = addressDiv.find('a').text.split()
+            
+        # Check if the address information is complete
+        # Maybe refator it to a check-function
+        if len(addressContent) < 5:
+                if len(addressContent[1]) < 5:
+                    street = addressContent[0] + addressContent[1]
+                    zipCode = addressContent[2]
+                    city = addressContent[3]
+                else:
+                    street = addressContent[0]
+                    zipCode = addressContent[1]
+                    city = addressContent[2]
+                    area = addressContent[3]
+        else:
+                street = addressContent[0] + addressContent[1]
+                zipCode = addressContent[2]
+                city = addressContent[3]
+                area = addressContent[4]
+        
+        if re.match('[0-9]{5}', zipCode):
+            zipcode = zipCode
+        else:
+            zipcode = None
+        
+        newAddress = street + '|' + city + '|' + area
+        
+        return newAddress, zipcode 
+    
     
     def get_loc(self):
         pass
