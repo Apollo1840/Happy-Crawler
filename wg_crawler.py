@@ -87,10 +87,8 @@ class wg_crawler():
         self.df = pd.read_csv(path)
         
     
-    def save_data(self, path):
-        
-    
-    
+    def save_data(self):
+        self.df.to_csv('material/The_wg_information_in_munich_modified.csv', encoding='utf-8')
     
     # to do 
     def get_details(self):
@@ -102,11 +100,10 @@ class wg_crawler():
         cautions = []
         startdates = []
         addresses = []
-        zipcodes = []
-        
+        zipcodes = []   
         i = 0
         for url in self.df.link:
-            time.sleep(5)
+            
             bc = basic_crawler(url)
             soup = bc.soup
             
@@ -121,14 +118,13 @@ class wg_crawler():
                 # get address and zipcode
                 address, zipcode = wg_crawler.get_addr_zip_from_soup(soup)
                 
+                time.sleep(5)
+                
             else:
                 caution = None
                 startdate = None
                 address = None
                 zipcode = None
-                
-                
-                
             
             cautions.append(caution)
             startdates.append(startdate)
@@ -136,7 +132,7 @@ class wg_crawler():
             zipcodes.append(zipcode)
             
             i = i + 1
-            print(i)
+            print('on entry {} ..'.format(i))
         
         self.df['caution'] = cautions
         self.df['startdate'] = startdates
@@ -220,7 +216,7 @@ class wg_crawler():
         # self.get_preis()
         # self.get_caution()
         
-        self.df.to_csv('material/The_wg_information_in_munich_{}.csv'.format(self.num_pages), encoding='utf-8')
+        # self.df.to_csv('material/The_wg_information_in_munich_{}.csv'.format(self.num_pages), encoding='utf-8')
         
         
 
@@ -244,6 +240,7 @@ class wg_analyse():
             plt.savefig('material/{}.jpg'.format(title))
         
         plt.show()
+        
         
         
         
@@ -320,15 +317,28 @@ def test():
     
     
 #    table > tbody > tr:nth-child(4) > td:nth-child(1)'
-
+    
+    w_c.df       
+    w_c.df.columns
+    
+    w_c.df.groupby('zipcode').price.mean()
+    w_c.df.caution.value_counts()
+    w_c.df.zipcode.value_counts()
+    
+    df2 = w_c.df.loc[w_c.df.caution != -2, :]
+    
+    
+    df2.caution.value_counts()
+    
 
 
 
 if __name__ == '__main__':
     w_c = wg_crawler()
-    w_c.run(num_pages=1)
-    # w_c.load_surface_data('material/The_wg_information_in_munich_5.csv')
+    # w_c.run(num_pages=1)
+    w_c.load_surface_data('material/The_wg_information_in_munich_5.csv')
     w_c.get_details()
+    w_c.save_data()
     
     
     
