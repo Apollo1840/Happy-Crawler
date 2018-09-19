@@ -346,20 +346,14 @@ def test():
 if __name__ == '__main__':
     
     w_c = wg_crawler()
-    w_c.proxy = proxy_formatter('118.178.227.171','80')
+    # w_c.proxy = proxy_formatter('118.178.227.171','80')
     w_c.run(end_page=2)
     print(w_c.df)
     
     # w_c.load_surface_data('material/The_wg_information_in_munich_modified.csv')
     # w_c.get_details()
     # w_c.save_data()
-    
-    def abc(a, *numbers, **args):
-        print(a)
-        print(len(numbers))
-    
-    
-    
+  
     # w_a = wg_analyse(w_c)
     # w_a.size_price()
     
