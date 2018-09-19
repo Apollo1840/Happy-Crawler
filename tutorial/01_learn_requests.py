@@ -22,6 +22,37 @@ elif response.status_code == 404:
     print('not found!')
     
 
+# proxy
+proxies = { "http": "http://10.10.1.10:3128", "https": "http://10.10.1.10:1080"} 
+requests.get("http://example.org", proxies=proxies)
+
+
+import urllib
+def spider_proxy():
+    proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=867060048322190715&num=20&result_fields=1,2'
+    req = urllib.request.Request(proxy_url)
+    content = urllib.request.urlopen(req, timeout=30).read()
+    proxy_list = content.decode().split("\n")
+    
+    return proxy_list
+
+proxylist = spider_proxy()
+
+
+
+def modify_for_requests(proxy, include_none_https = True, include_only_https = True):
+    mark =str.strip(proxy.split(',')[1])    
+    if mark == 'HTTP' and include_none_https:
+        return { "http": 'http://' + proxy.split(',')[0]}
+    elif mark == 'HTTPS' and include_only_https:
+        return { 'https': 'http://' + proxy.split(',')[0]}
+    elif mark == 'HTTP/HTTPS':
+        return { "http": 'http://' + proxy.split(',')[0], 'https': 'http://' + proxy.split(',')[0]}
+    
+
+for proxy in proxylist:
+        print(modify_for_requests(proxy))      
+
 
 
 ##############################################################################

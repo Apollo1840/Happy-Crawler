@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import re
 from basic_crawler import basic_crawler
+from basic_crawler import proxy_formatter
 
 import matplotlib.pyplot as plt
 import time
@@ -29,26 +30,30 @@ import time
 
 class wg_crawler():
     df = None
+    proxy = None
     
-    def get_surface_data(self, num_pages):
+    def get_surface_data(self, start_page=0, end_page=10, all_pages=False):
         '''
             it will update the  DataFrame which has three column: ID of the post, name of the room, link to this room
         '''
-        self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price'])
+        self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price', 'situation'])
         titles = []
         links = []
         sizes = []
         prices = []
+        situations = []
         
-        self.num_pages = num_pages
-        if num_pages=='auto':
-            num_pages = 10  # todo: get the data from web
         
-        for i in range(num_pages):
+        self.num_pages = end_page - start_page    
+        
+        if all_pages:
+            end_page = 100  # todo: get the data from we
+            
+        for i in range(start_page, end_page+1):
             
             url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)
             
-            bc=basic_crawler(url)
+            bc = basic_crawler(url, proxy = self.proxy)
             soup = bc.soup   
             # print(bc.response.status_code)
             # print(bc.soup.prettify())
@@ -56,14 +61,17 @@ class wg_crawler():
             posts = soup.find_all('div',class_='offer_list_item')
             
             for p in posts:
-                title = p.find('h3', class_='truncate_title')
-                titles.append(title.text.strip())
-                links.append('https://www.wg-gesucht.de/' + title.a['href'])
+                title_block = p.find('h3', class_='truncate_title')
+                titles.append(title_block.text.strip())
+                links.append('https://www.wg-gesucht.de/' + title_block.a['href'])
                 
-                detail = p.find('div', class_= 'detail-size-price-wrapper').text
-                size, price = wg_crawler.detail_info2size_and_price(detail)
+                detail_block = p.find('div', class_= 'detail-size-price-wrapper').text
+                size, price = wg_crawler.detail_info2size_and_price(detail_block)
                 sizes.append(size)
                 prices.append(price)
+                
+                situation_block = p.find('span', class_='noprint')
+                situations.append(situation_block['title'])
             
             print('on page {} ... '.format(i))
             time.sleep(8) # this is to avoid being catch 
@@ -74,6 +82,7 @@ class wg_crawler():
         self.df.room_size = self.df.room_size.astype('float')
         self.df.price = prices
         self.df.price = self.df.price.astype('float')
+        self.df.situation = situations
         
     @staticmethod    
     def detail_info2size_and_price(detail_info):
@@ -104,7 +113,7 @@ class wg_crawler():
         i = 0
         for url in self.df.link:
             
-            bc = basic_crawler(url)
+            bc = basic_crawler(url, proxy=self.proxy)                
             soup = bc.soup
             
             if bc.response.status_code == 200 and soup is not None: 
@@ -136,7 +145,7 @@ class wg_crawler():
         
         self.df['caution'] = cautions
         self.df['startdate'] = startdates
-        self.df['address'] = address
+        self.df['address'] = addresses
         self.df['zipcode'] = zipcodes
     
     @staticmethod    
@@ -210,13 +219,11 @@ class wg_crawler():
     
     
     
-    def run(self, num_pages=10):
+    def run(self, start_page=0, end_page=10):
         
-        self.get_surface_data(num_pages)
-        # self.get_preis()
-        # self.get_caution()
-        
-        # self.df.to_csv('material/The_wg_information_in_munich_{}.csv'.format(self.num_pages), encoding='utf-8')
+        self.get_surface_data(start_page, end_page)
+        self.get_details()
+        self.df.to_csv('material/The_wg_information_in_munich_{}.csv'.format(self.num_pages), encoding='utf-8')
         
         
 
@@ -278,6 +285,9 @@ def test():
     prices = []
     posts = soup.find_all('div',class_='offer_list_item')
     for p in posts:
+        people = p.find('span', class_='noprint')
+        print(people['title'])
+        
         title = p.find('h3', class_='truncate_title')
         titles.append(title.text.strip())
         links.append(title.a['href'])
@@ -329,22 +339,29 @@ def test():
     
     
     df2.caution.value_counts()
-    
 
+        
 
 
 if __name__ == '__main__':
+    
     w_c = wg_crawler()
-    # w_c.run(num_pages=1)
-    w_c.load_surface_data('material/The_wg_information_in_munich_5.csv')
-    w_c.get_details()
-    w_c.save_data()
+    w_c.proxy = proxy_formatter('118.178.227.171','80')
+    w_c.run(end_page=2)
+    print(w_c.df)
+    
+    # w_c.load_surface_data('material/The_wg_information_in_munich_modified.csv')
+    # w_c.get_details()
+    # w_c.save_data()
+    
+    def abc(a, *numbers, **args):
+        print(a)
+        print(len(numbers))
     
     
     
-    
-    w_a = wg_analyse(w_c)
-    w_a.size_price()
+    # w_a = wg_analyse(w_c)
+    # w_a.size_price()
     
     
     
