@@ -91,7 +91,7 @@ class wg_spider_local(wg_spider):
         for i in range(start_page-1, end_page):
             print('on page {} ... '.format(i))
             
-            soup = self.get_soup_main(i)
+            soup = self.load_soup_main(i)
 
             posts = soup.find_all('div',class_='offer_list_item')
             
@@ -127,7 +127,7 @@ class wg_spider_local(wg_spider):
   
         for i in range(len(self.df.link)):
             
-            soup = self.get_soup_post(i)
+            soup = self.load_soup_post(i)
                         
             if soup is not None: 
                                           
