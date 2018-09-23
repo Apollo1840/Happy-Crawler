@@ -11,7 +11,7 @@ Created on Fri Sep  7 21:54:26 2018
 '''
  zoucongyu: to developer:
      I suggest to use 
-         bc=basic_crawler(url), soup = bc.soup 
+         bc=BasicCrawler(url), soup = bc.soup 
     instead of
         res = req.get(url), BeautifulSoup(res.text)
     to be more hard to detect
@@ -23,15 +23,15 @@ import pandas as pd
 import re
 # import random
 
-from basic_crawler import basic_crawler
-from bs4 import BeautifulSoup
-# from basic_crawler import proxy_formatter
+from basic_crawler import BasicCrawler
+# from bs4 import BeautifulSoup
+# from BasicCrawler import proxy_formatter
 
 import matplotlib.pyplot as plt
 # import time
 
 
-class wg_crawler():
+class WgCrawler():
     '''
       This is main class, it serves as the interface. 
       The functions are realised in different classes.
@@ -40,93 +40,113 @@ class wg_crawler():
     
     df = None
 
-    def run(self, start_page=1, end_page=10, path = 'material/'):
+    def run(self, start_page=1, end_page=10, path = 'material/', save_data=True):
         # the default function, it will scrape some pages of the wg_gesucht and save the data in path
         
-        self.ws = wg_spider()
+        self.ws = WgSpider()
         
         # get main page data (just readable)
         self.ws.get_surface_data(start_page, end_page)
-        path0 = path + 'The_wg_information_in_munich_0_{}.csv'.format(end_page-start_page)
-        self.ws.df.to_csv(path0, encoding='utf-8')
+        
+        if save_data:
+            path0 = path + 'The_wg_information_in_munich_0_{}.csv'.format(end_page-start_page)
+            self.ws.df.to_csv(path0, encoding='utf-8')
         
         # go to the links to get more data to readable level
         self.ws.get_details()
-        path1 = path + 'The_wg_information_in_munich_1_{}.csv'.format(end_page-start_page)
-        self.ws.df.to_csv(path1, encoding='utf-8')
+        
+        if save_data:
+            path1 = path + 'The_wg_information_in_munich_1_{}.csv'.format(end_page-start_page)
+            self.ws.df.to_csv(path1, encoding='utf-8')
         
         # preprocess the data for the further analysis
-        wp = wg_preprocess(self.ws.df)
+        wp = WgPreprocess(self.ws.df)
         self.ws.df = wp.run()
-        path2 = path + 'The_wg_information_in_munich_2_{}.csv'.format(end_page-start_page)
-        self.ws.df.to_csv(path2, encoding='utf-8')
+        
+        if save_data:
+            path2 = path + 'The_wg_information_in_munich_2_{}.csv'.format(end_page-start_page)
+            self.ws.df.to_csv(path2, encoding='utf-8')
         
         self.df = self.ws.df
         
             
     def plot_size_price(self, path=None):
-        wa = wg_analysis(self.ws.df)
+        wa = WgAnalysis(self.ws.df)
         wa.size_price(path)
     
     
     
     
-class wg_spider():
+class WgSpider():
     df = None
-    proxy = None
+    proxy = 'auto'
     
     def get_surface_data(self, start_page=1, end_page=10, all_pages=False):
         '''
             it will update the  DataFrame which has three column: ID of the post, name of the room, link to this room
         '''
+        
+        self.num_pages = end_page - start_page 
+        
         self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price', 'situation'])
+        
         titles = []
         links = []
-        sizes = []
+        room_sizes = []
         prices = []
         situations = []
          
-        self.num_pages = end_page - start_page    
-        
         if all_pages:
             end_page = 100  # todo: get the data from we
             
         for i in range(start_page-1, end_page):
             print('on page {} ... '.format(i))
             
-            url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)          
-            bc = basic_crawler(url, proxy = self.proxy, safetime=(6,10))
-            soup = bc.soup
+            soup = self.load_soup_main(i)
             
             # print(bc.response.status_code)
             # print(bc.soup.prettify())
-            
-            posts = soup.find_all('div',class_='offer_list_item')
-            
-            for p in posts:
-                title_block = p.find('h3', class_='truncate_title')
-                titles.append(title_block.text.strip())
-                links.append('https://www.wg-gesucht.de/' + title_block.a['href'])
+            if soup:
+                posts = soup.find_all('div',class_='offer_list_item')    
+                for p in posts:
+                    title_block = p.find('h3', class_='truncate_title')
+                    title = title_block.text.strip()
+                    link = 'https://www.wg-gesucht.de/' + title_block.a['href']
+                    
+                    detail_block = p.find('div', class_= 'detail-size-price-wrapper').text
+                    room_size, price = WgSpider.detail_info2size_and_price(detail_block)
+                    
+                    situation_block = p.find('span', class_='noprint')
+                    situation = situation_block['title']
                 
-                detail_block = p.find('div', class_= 'detail-size-price-wrapper').text
-                size, price = wg_spider.detail_info2size_and_price(detail_block)
-                sizes.append(size)
-                prices.append(price)
+                    titles.append(title)
+                    links.append(link)
+                    room_sizes.append(room_size)
+                    prices.append(price)
+                    situations.append(situation)
+            else:
+                titles.append(None)
+                links.append(None)
+                room_sizes.append(None)
+                prices.append(None)
+                situations.append(None)
                 
-                situation_block = p.find('span', class_='noprint')
-                situations.append(situation_block['title'])
-            
+               
         self.df.title = titles
-        self.df.link = links
-        
-        self.df.room_size = sizes
-        self.df.room_size = self.df.room_size.astype('float')
-        
+        self.df.link = links        
+        self.df.room_size = room_sizes
         self.df.price = prices
-        self.df.price = self.df.price.astype('float')
-        
         self.df.situation = situations
-        
+    
+    
+    def load_soup_main(self, i):
+        url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)          
+        bc = BasicCrawler(url, headers='auto', proxy = 'auto', safetime=(6,10))
+        if bc.response.status_code == 200:
+            return bc.soup
+        else:
+            return None
+    
     @staticmethod    
     def detail_info2size_and_price(detail_info):
         si = detail_info.split('|')
@@ -151,20 +171,18 @@ class wg_spider():
   
         for i in range(len(self.df.link)):
             
-            url = self.df.link[i]
-            bc = basic_crawler(url, proxy=self.proxy, safetime=(6,10))                
-            soup = bc.soup
+            soup = self.load_soup_post(i)
             
-            if bc.response.status_code == 200 and soup is not None: 
+            if soup: 
                                           
                 # get caution
-                caution = wg_spider.get_caution_from_soup(soup)
+                caution = WgSpider.get_caution_from_soup(soup)
                 
                 # get starttime
-                date = wg_spider.get_date_from_soup(soup)
+                date = WgSpider.get_date_from_soup(soup)
                 
                 # get address and zipcode
-                address = wg_spider.get_addr_from_soup(soup)
+                address = WgSpider.get_addr_from_soup(soup)
                 
             else:
                 caution = None
@@ -180,6 +198,15 @@ class wg_spider():
         self.df['caution'] = cautions
         self.df['date'] = dates
         self.df['address'] = addresses
+    
+    def load_soup_post(self, i):
+        url = self.df.link[i]
+        bc = BasicCrawler(url, headers='auto', proxy = 'auto', safetime=(6,10))
+        if bc.response.status_code == 200:
+            return bc.soup
+        else:
+            return None
+    
     
     @staticmethod    
     def get_caution_from_soup(soup):
@@ -201,6 +228,8 @@ class wg_spider():
         div_date = soup.find('div', class_= 'col-sm-3')
         if div_date is None:
             return 'Error in page'
+        if div_date.p is None:
+            return None
         return div_date.p.text
                 
     
@@ -216,11 +245,26 @@ class wg_spider():
         return addressContent
     
     
-    def get_loc(self):
-        pass
+    @staticmethod
+    def probe_main_page(soup):
+       posts = soup.find_all('div',class_='offer_list_item')
+       boolean = (len(posts) >= 10)
+       if not boolean:
+           print('wrong main page')
+       return boolean
+   
+    @staticmethod
+    def probe_post_page(soup):
+        div_address = soup.find('div', class_='mb10')
+        boolean = (div_address is not None)
+        if not boolean:
+           print('wrong post page')
+        return boolean
+        
+
               
 
-class wg_preprocess():
+class WgPreprocess():
     
     def __init__(self, df):
         self.df = df
@@ -229,6 +273,10 @@ class wg_preprocess():
         self.clean()
         self.get_addr_details()
         self.get_date_details()
+        
+        self.df.room_size = self.df.room_size.astype('float')
+        self.df.price = self.df.price.astype('float')
+        
         
         return self.df
     
@@ -246,10 +294,10 @@ class wg_preprocess():
         
     
     def get_addr_details(self):
-        self.df['street'] = self.df.address.apply(wg_preprocess.transform_addr, return_id=0)
-        self.df['zipcode'] = self.df.address.apply(wg_preprocess.transform_addr, return_id=1)
-        self.df['city'] = self.df.address.apply(wg_preprocess.transform_addr, return_id=2)
-        self.df['area'] = self.df.address.apply(wg_preprocess.transform_addr, return_id=3)
+        self.df['street']   = self.df.address.apply(WgPreprocess.transform_addr, return_id=0)
+        self.df['zipcode']  = self.df.address.apply(WgPreprocess.transform_addr, return_id=1)
+        self.df['city']     = self.df.address.apply(WgPreprocess.transform_addr, return_id=2)
+        self.df['area']     = self.df.address.apply(WgPreprocess.transform_addr, return_id=3)
 
         del self.df['address']
     
@@ -278,19 +326,20 @@ class wg_preprocess():
             else:
                 city = second_part[0]
         
-        result = [street, zipcode, city, area]
+        result = [street, zipcode, city, area]  
         return result[return_id]
     
     def get_date_details(self):
-        self.df['start_date'] = self.df.date.apply(wg_preprocess.transform_date, return_id=0)
-        self.df['end_date'] = self.df.date.apply(wg_preprocess.transform_date, return_id=1)
+        self.df['start_date']   = self.df.date.apply(WgPreprocess.transform_date, return_id=0)
+        self.df['end_date']     = self.df.date.apply(WgPreprocess.transform_date, return_id=1)
+        
         del self.df['date']
     
     @staticmethod
     def transform_date(dateContent, return_id=0):
         start_date, end_date = None, None
         
-        pieces = wg_preprocess.information_to_pieces(dateContent, second_level=':')
+        pieces = WgPreprocess.information_to_pieces(dateContent, second_level=':')
     
         if pieces[0] == 'frei ab':
             start_date = pieces[1]
@@ -310,12 +359,6 @@ class wg_preprocess():
                 if word:
                     pieces.append(word)
         return pieces
-        
-
-        
-        
-        
-        
         
     def get_addr_details_2(self):
         def transform_addr(addressContent):
@@ -357,7 +400,7 @@ class wg_preprocess():
     
     
 
-class wg_analysis():
+class WgAnalysis():
     df = None
     
     def __init__(self, df):
@@ -379,24 +422,7 @@ class wg_analysis():
         plt.show()
 
 
-def make_wg_gesucht_offline(start_page=1, end_page=10):
-    
-    for i in range(start_page-1, end_page):
-        url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)          
-        bc = basic_crawler(url, safetime=(6,10))
-        bc.save_html('main_page_{}'.format(i))
-       
-        soup = bc.soup   
-        posts = soup.find_all('div',class_='offer_list_item')
-        os.mkdir('material/main_page_{}'.format(i))
-        for j in range(len(posts)):
-            title_block = posts[j].find('h3', class_='truncate_title')
-            link = 'https://www.wg-gesucht.de/' + title_block.a['href']
-            
-            bc = basic_crawler(link, safetime=(6,10))            
-            bc.save_html('main_page_{}/post_page{}'.format(i,j))
-            
-            print('on page {} for entry {}...\n'.format(i,j))
+
 
 
 if __name__ == '__main__':
@@ -404,7 +430,7 @@ if __name__ == '__main__':
     pd.set_option('max_colwidth',200)
     pd.set_option('max_columns',None) 
     
-    w_c = wg_crawler()
+    w_c = WgCrawler()
     # w_c.proxy = proxy_formatter('118.178.227.171','80')
     w_c.run(end_page=2)
     w_c.plot_size_price()

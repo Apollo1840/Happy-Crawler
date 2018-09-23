@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Sep  5 17:59:23 2018
+Created on Sun Sep 23 19:55:44 2018
 
-@author: zoc
+@author: zouco
+
 """
+
+
 import requests
-from requests.exceptions import ProxyError 
+from requests.exceptions import ProxyError
+from requests.exceptions import SSLError
 from bs4 import BeautifulSoup
 import os
 import time
@@ -13,58 +17,53 @@ import random
 import urllib
 
 class BasicCrawler():
-    '''this class will be initialize with a url.
-    by default it will use utf-8 as decoder.
+    history_ua_=[]
     
-    properties:
-        html:  the html text of the url
-        soup:  the soup created by BeautifulSoup method
-    '''
-    history_ua_ = []
+    def __init__(self, headers=None, proxies=None):
+        self.headers_ = headers
+        self.proxies_ = proxies
+        self.proxies_list_ = []
+         
+        if headers == 'auto':
+             self.generate_headers()
+        if proxies == 'auto':
+             self.generate_proxies()
+             
+        self.response_ = None
     
-    proxies_list_ = []
-    current_proxies_ = None
-            
-    def __init__(self, url="https://github.com/Apollo1840/Happy-Crawler", encoding = 'utf-8', safetime=(0,0),
-                 headers='auto', proxies=None):
+    def get(self, url, safetime=(0,0)):
         
         time.sleep(random.randint(*safetime))
         
-        if headers is None and proxies is None:
-            self.response = requests.get(url)
+        if self.headers_ is None and self.proxies_ is None:
+            response = requests.get(url)
             
         else:
-            # generate headers and proxies if it is needed
-            if headers is 'auto':
-                    headers = BasicCrawler.generate_headers()
-            
-            if proxies is 'auto':
-                if BasicCrawler.current_proxies_ is None:
-                    proxies = BasicCrawler.generate_proxies()
-                else:
-                    proxies = BasicCrawler.current_proxies_
-           
-            # get response
-            if headers is None and proxies is not None:
-                try:
-                    self.response = requests.get(url, proxies = proxies, timeout = 60)
-                except ProxyError:
-                    proxies = BasicCrawler.generate_proxies()
-                    self.response = requests.get(url, proxies = proxies, timeout = 60)
-              
-            elif headers is not None and proxies is None:
-                self.response = requests.get(url, headers = headers, timeout = 60)
+            if self.headers_ is None and self.proxies_ is not None:
+                exist_error = True
+                while exist_error:
+                    try:
+                        response = requests.get(url, proxies = self.proxies_, timeout = 60)
+                        exist_error = False
+                    except (ProxyError, SSLError):
+                        self.generate_proxies()
+                            
+            elif self.headers_ is not None and self.proxies_ is None:
+                response = requests.get(url, headers = self.headers_, timeout = 60)
                 
             else:
-                try:
-                    self.response = requests.get(url, headers = headers, proxies = proxies, timeout = 60)
-                except ProxyError:
-                    proxies = BasicCrawler.generate_proxies()
-                    self.response = requests.get(url, headers = headers, proxies = proxies, timeout = 60)
-     
-
-    @staticmethod
-    def generate_headers():
+                exist_error = True
+                while exist_error:
+                    try:
+                        response = requests.get(url, proxies = self.proxies_, headers= self.headers_, timeout = 60)
+                        exist_error = False
+                    except (ProxyError, SSLError):
+                        self.generate_proxies()
+                        
+        self.response_ = response
+        return response
+    
+    def generate_headers(self):
         user_agents = ["Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0",
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32",
             "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
@@ -91,21 +90,20 @@ class BasicCrawler():
         headers = {'User-Agent': user_agent}
         headers.update({'Cookie': cookies[1]})
         
+        self.headers_ = headers
         return headers
     
-    @staticmethod
-    def generate_proxies(): 
-        if len(BasicCrawler.proxies_list_) == 0:
-            BasicCrawler.create_proxies_list()
-
-        BasicCrawler.current_proxies_ = BasicCrawler.proxies_list_.pop(0)
-        
+    def generate_proxies(self): 
         print('generate proxies')
         
-        return BasicCrawler.current_proxies_
-    
-    @staticmethod
-    def create_proxies_list():
+        if len(self.proxies_list_) == 0:
+            print('creat list\n')
+            self.create_proxies_list()
+
+        self.proxies_ = self.proxies_list_.pop(0)
+        print('remain_ips:{}'.format(len(self.proxies_list_)))        
+        
+    def create_proxies_list(self):
         def spider_proxy():         
             proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=861222618991190326&num=10&http_type=1,2&anonymous=5&result_fields=1,2'
             req = urllib.request.Request(proxy_url)
@@ -125,60 +123,35 @@ class BasicCrawler():
             else:
                 return None
         
-        print('creat list\n')
-        BasicCrawler.proxies_list_ = list(filter(None, [modify_proxies(proxy) for proxy in spider_proxy()]))
+        self.proxies_list_.extend(list(filter(None, [modify_proxies(proxy) for proxy in spider_proxy()])))
+        print('remain_ips:{}'.format(len(self.proxies_list_))) 
     
-
-        
-    @property
-    def html(self):
-        return self.response.text
+    def get_soup(self, url, safetime=(0,0)): 
+        soup = self.get_soup_trial(url, safetime)   
+        while not self.probe(soup):
+            self.generate_proxies()
+            soup = self.get_soup_trial(url, safetime)
+        return soup
     
-    @property
-    def soup(self):
-        return BeautifulSoup(self.html, 'lxml')
+    def get_soup_trial(self, url, safetime=(0,0)):
+        self.get(url, safetime)
+        soup = BeautifulSoup(self.response_.text,'lxml')
+        return soup
     
     def save_html(self, name='page'):
-        self.response.encoding='utf-8'
+        # use get() or get_soup() first
+        
+        self.response_.encoding='utf-8'
         with open('material/page.txt','w', encoding="utf-8") as f:
-            f.write(self.response.text)
+            f.write(self.response_.text)
         os.rename('material/page.txt','material/{}.html'.format(name))
     
-    def run(self):
+    def probe(self, soup):
+        return True
         
-        information = """
-        This crawler does nothing. 
-        You can use bc.html to get the html text of the website.
-        You can use bc.soup to get the soup by BeautifulSoup method.
-        """
-        
-        print(information)
-    
-    
-def proxy_formatter(ip,portal):
-    content = 'http://{0}:{1}'.format(ip, portal)
-    return {'http': content, 'https': content}
-
-
-def test():
-    crawler = BasicCrawler('https://www.bbc.com/news', proxies = 'auto')
-    print(crawler.soup.find('a'))
-    
-    print(BasicCrawler.proxies_list_)
-    print(len(BasicCrawler.proxies_list_))
-    print(BasicCrawler.current_proxies_)
-    
-    for i in range(20):
-        crawler = BasicCrawler('https://www.bbc.com/news', proxies = 'auto')
-        print(crawler.soup.find('a'))
-        print(len(crawler.proxies_list_))
-        print(crawler.current_proxies_)
-        print('round {}'.format(i))
-
-
 
 if __name__ == '__main__':
-    crawler = BasicCrawler('https://www.bbc.com/news')
-    print(crawler.html)
-    
-
+    crawler = BasicCrawler()
+    soup = crawler.get_soup('https://www.bbc.com/news')
+    print(soup.find('a'))
+       

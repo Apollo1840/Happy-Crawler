@@ -11,7 +11,7 @@ Created on Fri Sep  7 21:54:26 2018
 '''
  zoucongyu: to developer:
      I suggest to use 
-         bc=basic_crawler(url), soup = bc.soup 
+         bc=BasicCrawler(url), soup = bc.soup 
     instead of
         res = req.get(url), BeautifulSoup(res.text)
     to be more hard to detect
@@ -24,176 +24,156 @@ import pandas as pd
 import os
 # import random
 
-from basic_crawler import basic_crawler
-# from basic_crawler import proxy_formatter
+from bc2 import BasicCrawler
+# from BasicCrawler import proxy_formatter
 
 # import matplotlib.pyplot as plt
-# import time
+import time
 
 from bs4 import BeautifulSoup
 
 
-from wg_crawler import wg_spider
-from wg_crawler import wg_preprocess
-from wg_crawler import wg_analysis
+from wg_crawler import WgSpider
+from wg_crawler import WgPreprocess
+# from wg_crawler import WgAnalysis
 
-class wg_crawler():
+from math_tools import cut_range
+import threading
+
+class WgCrawler():
     '''
       This is main class, it serves as the interface. 
       The functions are realised in different classes.
       
     '''
+    
+    def run(self, start_page=1, end_page=10, num_processes=1, path = 'material/', data_exists=False):
         
-    def run(self, start_page=1, end_page=10, path = 'material/', data_exists=False):
+        self.df = pd.DataFrame()
+        
+        tasks = cut_range(start_page, end_page+1, num_processes)
+        print(tasks)
+        
+        thread_list = []
+        for task in tasks:
+            if len(task) > 0:
+                t = threading.Thread(target=self.mining, args=(list(task)[0], list(task)[-1], data_exists))
+                thread_list.append(t)
+                t.start()
+                time.sleep(1)
+        
+        for t in thread_list:
+            t.join()
+        
+        wp = WgPreprocess(self.df)
+        self.df = wp.run()
+        
+        path = path + 'The_wg_information_in_munich_{}.csv'.format(end_page-start_page)
+        self.df.to_csv(path, encoding='utf-8')
+        
+    def mining(self, start_page=1, end_page=10, data_exists=False):
+        if not data_exists:
+            make_wg_gesucht_offline(start_page=start_page, end_page=end_page)
+        
+        ws = WgSpider_local()
+        ws.get_surface_data(start_page, end_page)
+        ws.get_details()
+        
+        self.df = pd.concat([self.df, ws.df],axis=0)
+    
+    def run_simple(self, start_page=1, end_page=10, path = 'material/', data_exists=False, save_data=True):
         # the default function, it will scrape some pages of the wg_gesucht and save the data in path
         if not data_exists:
             make_wg_gesucht_offline(start_page=start_page, end_page=end_page)
-        self.ws = wg_spider_local()
+        
+        self.ws = WgSpider_local()
         
         # get main page data
         self.ws.get_surface_data(start_page, end_page)
-        path0 = path + 'The_wg_information_in_munich_0_{}.csv'.format(end_page-start_page)
-        self.ws.df.to_csv(path0, encoding='utf-8')
+        
+        if save_data:
+            path0 = path + 'The_wg_information_in_munich_0_{}.csv'.format(end_page-start_page)
+            self.ws.df.to_csv(path0, encoding='utf-8')
         
         # go to the links to get more data to readable level
         self.ws.get_details()
-        path1 = path + 'The_wg_information_in_munich_1_{}.csv'.format(end_page-start_page)
-        self.ws.df.to_csv(path1, encoding='utf-8')
+        
+        if save_data:
+            path1 = path + 'The_wg_information_in_munich_1_{}.csv'.format(end_page-start_page)
+            self.ws.df.to_csv(path1, encoding='utf-8')
         
         # preprocess the data for the further analysis
-        wp = wg_preprocess(self.ws.df)
+        wp = WgPreprocess(self.ws.df)
         self.ws.df = wp.run()
-        path2 = path + 'The_wg_information_in_munich_2_{}.csv'.format(end_page-start_page)
-        self.ws.df.to_csv(path2, encoding='utf-8')
+        
+        if save_data:
+            path2 = path + 'The_wg_information_in_munich_2_{}.csv'.format(end_page-start_page)
+            self.ws.df.to_csv(path2, encoding='utf-8')
         
         self.df = self.ws.df
+        
+    
           
-        
-        
-class wg_spider_local(wg_spider):
+    
+class WgSpider_local(WgSpider):
     df = None
     proxy = None
-    
-    def get_surface_data(self, start_page=1, end_page=10, all_pages=False):
-        self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price', 'situation'])
-        titles = []
-        links = []
-        sizes = []
-        prices = []
-        situations = []
-        
-        
-        self.num_pages = end_page - start_page    
-        
-        if all_pages:
-            end_page = 100  # todo: get the data from we
-            
-        for i in range(start_page-1, end_page):
-            print('on page {} ... '.format(i))
-            
-            soup = self.load_soup_main(i)
-
-            posts = soup.find_all('div',class_='offer_list_item')
-            
-            for p in posts:
-                title_block = p.find('h3', class_='truncate_title')
-                titles.append(title_block.text.strip())
-                links.append('https://www.wg-gesucht.de/' + title_block.a['href'])
-                
-                detail_block = p.find('div', class_= 'detail-size-price-wrapper').text
-                size, price = wg_spider_local.detail_info2size_and_price(detail_block)
-                sizes.append(size)
-                prices.append(price)
-                
-                situation_block = p.find('span', class_='noprint')
-                situations.append(situation_block['title'])
-            
-        self.df.title = titles
-        self.df.link = links
-        
-        self.df.room_size = sizes
-        self.df.room_size = self.df.room_size.astype('float')
-        
-        self.df.price = prices
-        self.df.price = self.df.price.astype('float')
-        
-        self.df.situation = situations
-        
-    def get_details(self):
-
-        cautions = []
-        dates = []
-        addresses = []
-  
-        for i in range(len(self.df.link)):
-            
-            soup = self.load_soup_post(i)
-                        
-            if soup is not None: 
-                                          
-                # get caution
-                caution = wg_spider_local.get_caution_from_soup(soup)
-                
-                # get starttime
-                date = wg_spider_local.get_date_from_soup(soup)
-                
-                # get address and zipcode
-                address = wg_spider_local.get_addr_from_soup(soup)
-                
-            else:
-                caution = None
-                date = None
-                address = None
-            
-            cautions.append(caution)
-            dates.append(date)
-            addresses.append(address)
-            
-            print('on entry {} ..'.format(i))
-        
-        self.df['caution'] = cautions
-        self.df['date'] = dates
-        self.df['address'] = addresses
-        
-    @staticmethod
-    def load_local_html_as_soup(path):
-        with open(path, 'rb') as f:
-            soup = BeautifulSoup(f,'html5lib')
-        return soup
-              
-    
+     
     def load_soup_main(self,i):
-        soup = wg_spider_local.load_local_html_as_soup('material/main_page_{}.html'.format(i))
+        soup = WgSpider_local.load_local_html_as_soup('material/main_page_{}.html'.format(i))
         return soup
         
     def load_soup_post(self,i):
         page = i//20
         post = i%20
-        soup = wg_spider_local.load_local_html_as_soup('material/main_page_{}/post_page{}.html'.format(page,post))
+        soup = WgSpider_local.load_local_html_as_soup('material/main_page_{}/post_page{}.html'.format(page,post))
         return soup
+    
+    @staticmethod
+    def load_local_html_as_soup(path):
+        with open(path, 'rb') as f:
+            soup = BeautifulSoup(f,'html5lib')
+        return soup
+
+
+
+def make_wg_gesucht_offline(self, start_page=1, end_page=10, proxies='auto'):
+    
+        for i in range(start_page-1, end_page):
+                  
+            bc = BasicCrawler(proxies=proxies)
+    
+            url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)            
+            bc.probe = lambda soup: WgSpider.probe_main_page(soup)
+            soup = bc.get_soup(url)    
+            bc.save_html('main_page_{}'.format(i))
+                
+             
+            posts = soup.find_all('div',class_='offer_list_item')
+            os.mkdir('material/main_page_{}'.format(i))
+            for j in range(len(posts)):
+                print('on page {} for entry {}...\n'.format(i,j))
+                title_block = posts[j].find('h3', class_='truncate_title')
+    
+                url = 'https://www.wg-gesucht.de/' + title_block.a['href']
+                bc.probe = lambda soup: WgSpider.probe_post_page(soup)
+                bc.get_soup(url) # only get_soup has probe 
+                bc.save_html('main_page_{}/post_page{}'.format(i,j))
+                
+            
         
-
-    
-
-
-def make_wg_gesucht_offline(start_page=1, end_page=10):
-    
-    for i in range(start_page-1, end_page):
-        url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.{}.html'.format(i)          
-        bc = basic_crawler(url, safetime=(6,10))
-        bc.save_html('main_page_{}'.format(i))
-       
-        soup = bc.soup   
-        posts = soup.find_all('div',class_='offer_list_item')
-        os.mkdir('material/main_page_{}'.format(i))
-        for j in range(len(posts)):
-            title_block = posts[j].find('h3', class_='truncate_title')
-            link = 'https://www.wg-gesucht.de/' + title_block.a['href']
+ 
+        
             
-            bc = basic_crawler(link, safetime=(6,10))            
-            bc.save_html('main_page_{}/post_page{}'.format(i,j))
-            
-            print('on page {} for entry {}...\n'.format(i,j))
+
+
+
+
+
+
+
+
+
 
 
 def test():
@@ -202,17 +182,20 @@ def test():
     '''
     
     # make_wg_gesucht_offline(start_page=2, end_page=2)
-    ws = wg_spider_local()
+    ws = WgSpider_local()
     ws.get_surface_data(end_page=2)
     ws.get_details()
 
-    wp = wg_preprocess(ws.df)
+    wp = WgPreprocess(ws.df)
     ws.df = wp.run()
     print(ws.df)
 
-    wc = wg_crawler()
+    wc = WgCrawler()
     wc.run(end_page=2, data_exists=True)
     print(wc.df)
+    
+    
+    
     
 
 
@@ -220,10 +203,14 @@ if __name__ == '__main__':
     
     pd.set_option('max_colwidth',200)
     pd.set_option('max_columns',None) 
-
-    wc = wg_crawler()
-    wc.run(end_page=2)
+    
+    t0 = time.time()
+    
+    wc = WgCrawler()
+    wc.run(end_page=4, num_processes=2)
     print(wc.df)
+    
+    print('spend {}s'.format(time.time()-t0))
     
 
     

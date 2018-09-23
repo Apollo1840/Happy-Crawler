@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import requests
 from bs4 import BeautifulSoup
-from basic_crawler import basic_crawler
+from basic_crawler import BasicCrawler
 
-class Crawler_bbc(basic_crawler):
+class bbcCrawler(BasicCrawler):
     ''' this class is just a branch of methods.
     '''
     
     def __init__(self):
-        super(Crawler_bbc, self).__init__('https://www.bbc.com/news')
+        super(bbcCrawler, self).__init__('https://www.bbc.com/news')
     
     def header_link(self, file_path):
         # this method will write headers and their links into the file_path you defined, like: 'material/news.txt'
@@ -37,7 +37,7 @@ def site_fullname(href, head):
 
 if __name__ == '__main__':
     
-    crawler = Crawler_bbc()
+    crawler = bbcCrawler()
     print(crawler.html)
     crawler.header_link('material/news.txt')
     

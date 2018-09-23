@@ -11,7 +11,7 @@ Created on Fri Sep  7 21:54:26 2018
 '''
  zoucongyu: to developer:
      I suggest to use 
-         bc=basic_crawler(url), soup = bc.soup 
+         bc=BasicCrawler(url), soup = bc.soup 
     instead of
         res = req.get(url), BeautifulSoup(res.text)
     to be more hard to detect
@@ -23,11 +23,11 @@ import pandas as pd
 import re
 import random
 
-from basic_crawler import basic_crawler
+from basic_crawler import BasicCrawler
 from basic_crawler import proxy_formatter
 
-from wg_crawler import wg_spider
-from wg_crawler import wg_preprocess
+from wg_crawler import WgSpider
+from wg_crawler import WgPreprocess
 
 import matplotlib.pyplot as plt
 import time
@@ -109,7 +109,7 @@ def test():
     
     df = pd.DataFrame([], columns=['name','link'])
     url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen.90.0.1.1.html'
-    bc=basic_crawler(url)
+    bc=BasicCrawler(url)
     soup = bc.soup
     
     
@@ -135,7 +135,7 @@ def test():
     # this part is for detail page (the link in original dataframe)
     url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen-Trudering.3278644.html'
     url = 'https://www.wg-gesucht.de/wg-zimmer-in-Muenchen-Schwabing-West.6873455.html'
-    bc=basic_crawler(url)
+    bc=BasicCrawler(url)
     soup = bc.soup
     
     address = soup.select('div.col-sm-4.mb10 > a')

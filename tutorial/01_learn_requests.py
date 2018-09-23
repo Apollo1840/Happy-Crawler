@@ -27,6 +27,7 @@ proxies = { "http": "http://10.10.1.10:3128", "https": "http://10.10.1.10:1080"}
 requests.get("http://example.org", proxies=proxies)
 
 
+
 import urllib
 def spider_proxy():
     proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=867060048322190715&num=20&result_fields=1,2'

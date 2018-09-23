@@ -14,20 +14,20 @@ import jieba.posseg
 
 import requests as req
 from bs4 import BeautifulSoup
-from basic_crawler import basic_crawler
+from basic_crawler import BasicCrawler
 
 import numpy as np
 import pandas as pd
-from pyecharts import WordCloud
+from pyecharts import WosrdCloud
 
 import time
 
-class douban_crawler(basic_crawler):
+class DoubanCrawler(BasicCrawler):
     
     
     def __init__(self):
         url = 'https://www.douban.com/group/blabla//discussion?start=0'
-        super(douban_crawler, self).__init__(url)
+        super(DoubanCrawler, self).__init__(url)
         self.temp_soup = None
         self.post_titles = []
         self.historical_post_titles = []
@@ -93,7 +93,7 @@ class douban_crawler(basic_crawler):
         for id_page in range(num_pages):
             time.sleep(1)
             url = 'https://www.douban.com/group/blabla//discussion?start={}'.format(num_pages-id_page)
-            c = basic_crawler(url)
+            c = BasicCrawler(url)
             self.temp_soup = c.soup
             del c
             self.get_words(include_heat)
@@ -193,7 +193,7 @@ def test():
 
 if __name__ == '__main__':
     
-    dc = douban_crawler()
+    dc = DoubanCrawler()
     dc.run(num_pages=10, adjustment='normal')
 
 
