@@ -76,6 +76,7 @@ class RevenueCrawler():
                         pass
         return revenue 
     
+<<<<<<< HEAD
     def refine_wiki_link(self, link):
         if link.startswith('https://de.wikipedia.org') or link.startswith('https://en.wikipedia.org'):
             return link
@@ -98,12 +99,29 @@ class ProductsCrawler():
         pass
 
 
+
+
+def get_thomasnet_supplier_links(supplier_names=[]):
+
+    sns = dict()
+    
+    bc = BasicCrawler()
+    for sn in supplier_names:
+        res = bc.get_soup(url="https://www.thomasnet.com/search.html?WTZO=Find+Suppliers&cov=NA&searchx=true&what={}&which=prod".format(sn))
+        res = res.find_all('div',class_="search-list")
+        sns[sn] = {}
+        for it in res[0].find_all('li'):
+            sns[sn][it.find('a').text] = it.find('a')['href']
+    return sns
+
+
+
 if __name__ == '__main__':
     
     pd.set_option('max_colwidth',200)
     pd.set_option('max_columns',None) 
     
-    suppliers = ["Jabil", "Sanmina", "Thermo Fisher Diagnostics", "IVEK", "Randox Laboratories", "Inpeco", "Nypro", "Carclo", "Bio-Rad Laboratories"]
+    suppliers = [] #"Jabil", "Sanmina", "Thermo Fisher Diagnostics", "IVEK", "Randox Laboratories", "Inpeco", "Nypro", "Carclo", "Bio-Rad Laboratories"]
     
     revenues = []
     rc = RevenueCrawler()
@@ -116,6 +134,11 @@ if __name__ == '__main__':
     
     print(result)
     result.to_csv('SPIDER.csv')
+    
+    res = get_thomasnet_supplier_links(supplier_names=["sanmina"])
+    print(res)
+    
+    
         
         
         
