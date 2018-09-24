@@ -2,7 +2,7 @@
 """
 Created on Fri Sep  7 21:54:26 2018
 
-@author: zouco
+@author: zouco, Liuyang
 """
 
 
@@ -88,13 +88,14 @@ class WgSpider():
         
         self.num_pages = end_page - start_page 
         
-        self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price', 'situation'])
+        self.df = pd.DataFrame([], columns=['title', 'link', 'room_size', 'price', 'situation', 'wanted_list'])
         
         titles = []
         links = []
         room_sizes = []
         prices = []
         situations = []
+        wanted_lists = []
          
         if all_pages:
             end_page = 100  # todo: get the data from we
@@ -118,18 +119,26 @@ class WgSpider():
                     
                     situation_block = p.find('span', class_='noprint')
                     situation = situation_block['title']
+                    
+                    wanted_tags = p.find_all('img', class_='noprint')
+                    wanted_list = '|'
+                    for tag in wanted_tags:
+                        wanted_list += '{}|'.format(tag['alt'])
+
                 
                     titles.append(title)
                     links.append(link)
                     room_sizes.append(room_size)
                     prices.append(price)
                     situations.append(situation)
+                    wanted_lists.append(wanted_list)
             else:
                 titles.append(None)
                 links.append(None)
                 room_sizes.append(None)
                 prices.append(None)
                 situations.append(None)
+                wanted_lists.append(None)
                 
                
         self.df.title = titles
@@ -137,6 +146,8 @@ class WgSpider():
         self.df.room_size = room_sizes
         self.df.price = prices
         self.df.situation = situations
+        self.df.wanted_list = wanted_lists
+    
     
     
     def load_soup_main(self, i):
@@ -273,9 +284,12 @@ class WgPreprocess():
         self.clean()
         self.get_addr_details()
         self.get_date_details()
+        self.get_situ_details()
+        self.get_want_details()
         
         self.df.room_size = self.df.room_size.astype('float')
         self.df.price = self.df.price.astype('float')
+        self.df.reset_index()
         
         
         return self.df
@@ -359,6 +373,54 @@ class WgPreprocess():
                 if word:
                     pieces.append(word)
         return pieces
+    
+    @staticmethod    
+    def transform_situation(situation, return_id=0):
+        title_split = situation.split()
+        totalRenterString = title_split[0] # _er
+        renterGenderString = title_split[2] #(_w,_m)
+    
+        num_total_renter = totalRenterString[0:renterGenderString.find("er")-1]
+        num_female_renter = renterGenderString[renterGenderString.find("(")+1:renterGenderString.find("w")]
+        num_male_renter = renterGenderString[renterGenderString.find(",")+1:renterGenderString.find("m")]
+           
+        result = [num_total_renter, num_female_renter, num_male_renter]
+        return result[return_id]
+    
+    def get_situ_details(self):
+        self.df['num_renter']     = self.df.situation.apply(WgPreprocess.transform_situation, return_id=0)
+        self.df['num_renter_w']   = self.df.situation.apply(WgPreprocess.transform_situation, return_id=1)
+        self.df['num_renter_m']   = self.df.situation.apply(WgPreprocess.transform_situation, return_id=2)
+
+        del self.df['situation']
+           
+    @staticmethod
+    def transform_wanted_list(wanted_list, return_id=0):
+        num_wanted_male = 0
+        num_wanted_female = 0
+        num_no_gender_limit = 0
+        
+        wanted_list = wanted_list.split('|')
+
+        for wanted in wanted_list[1:-1]:
+            if 'oder' in wanted:
+                num_no_gender_limit += 1
+            elif 'Mitbewohnerin' in wanted:
+                num_wanted_female += 1
+            elif 'Mitbewohner' in wanted:
+                num_wanted_male += 1
+            else:
+                print("Error in get_situation_details: keyword not found")
+        
+        result = [num_wanted_male, num_wanted_female, num_no_gender_limit]
+        return result[return_id]
+    
+    def get_want_details(self):
+        self.df['num_want_m']       = self.df.wanted_list.apply(WgPreprocess.transform_wanted_list, return_id=0)
+        self.df['num_want_w']       = self.df.wanted_list.apply(WgPreprocess.transform_wanted_list, return_id=1)
+        self.df['num_want_(m/w)']   = self.df.wanted_list.apply(WgPreprocess.transform_wanted_list, return_id=2)
+
+        del self.df['wanted_list']
         
     def get_addr_details_2(self):
         def transform_addr(addressContent):

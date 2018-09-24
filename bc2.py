@@ -45,7 +45,7 @@ class BasicCrawler():
                     try:
                         response = requests.get(url, proxies = self.proxies_, timeout = 60)
                         exist_error = False
-                    except (ProxyError, SSLError):
+                    except (ProxyError, SSLError, ConnectionError):
                         self.generate_proxies()
                             
             elif self.headers_ is not None and self.proxies_ is None:
@@ -57,7 +57,7 @@ class BasicCrawler():
                     try:
                         response = requests.get(url, proxies = self.proxies_, headers= self.headers_, timeout = 60)
                         exist_error = False
-                    except (ProxyError, SSLError):
+                    except (ProxyError, SSLError, ConnectionError):
                         self.generate_proxies()
                         
         self.response_ = response
@@ -105,7 +105,7 @@ class BasicCrawler():
         
     def create_proxies_list(self):
         def spider_proxy():         
-            proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=861222618991190326&num=10&http_type=1,2&anonymous=5&result_fields=1,2'
+            proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=867173409065270182&num=10&anonymous=5&result_fields=1,2'
             req = urllib.request.Request(proxy_url)
             content = urllib.request.urlopen(req, timeout=30).read()
             proxy_list = content.decode().split("\n")

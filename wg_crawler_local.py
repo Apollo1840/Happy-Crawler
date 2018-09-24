@@ -52,7 +52,7 @@ class WgCrawler():
         self.df = pd.DataFrame()
         
         tasks = cut_range(start_page, end_page+1, num_processes)
-        print(tasks)
+        # print(tasks)
         
         thread_list = []
         for task in tasks:
@@ -137,7 +137,7 @@ class WgSpider_local(WgSpider):
 
 
 
-def make_wg_gesucht_offline(self, start_page=1, end_page=10, proxies='auto'):
+def make_wg_gesucht_offline(start_page=1, end_page=10, proxies='auto'):
     
         for i in range(start_page-1, end_page):
                   
@@ -159,23 +159,7 @@ def make_wg_gesucht_offline(self, start_page=1, end_page=10, proxies='auto'):
                 bc.probe = lambda soup: WgSpider.probe_post_page(soup)
                 bc.get_soup(url) # only get_soup has probe 
                 bc.save_html('main_page_{}/post_page{}'.format(i,j))
-                
-            
-        
- 
-        
-            
-
-
-
-
-
-
-
-
-
-
-
+                        
 def test():
     '''
         here you can test your program.
@@ -207,7 +191,7 @@ if __name__ == '__main__':
     t0 = time.time()
     
     wc = WgCrawler()
-    wc.run(end_page=4, num_processes=2)
+    wc.run_simple(end_page=12)
     print(wc.df)
     
     print('spend {}s'.format(time.time()-t0))
