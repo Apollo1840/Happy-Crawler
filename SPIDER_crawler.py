@@ -10,6 +10,8 @@ import pandas as pd
 
 import time
 
+import re
+
 
 class RevenueCrawler():
     
@@ -75,8 +77,7 @@ class RevenueCrawler():
                 except AttributeError:
                         pass
         return revenue 
-    
-<<<<<<< HEAD
+
     def refine_wiki_link(self, link):
         if link.startswith('https://de.wikipedia.org') or link.startswith('https://en.wikipedia.org'):
             return link
@@ -100,7 +101,7 @@ class ProductsCrawler():
 
 
 
-
+'''
 def get_thomasnet_supplier_links(supplier_names=[]):
 
     sns = dict()
@@ -113,14 +114,93 @@ def get_thomasnet_supplier_links(supplier_names=[]):
         for it in res[0].find_all('li'):
             sns[sn][it.find('a').text] = it.find('a')['href']
     return sns
+'''
+
+class ThomasnetCrawler():
 
 
-
-if __name__ == '__main__':
+    def get_suppliers(self, material='plastics'):
+        # the material name must be prefict
+        
+        url = 'https://www.thomasnet.com/catalogs/keyword/{}/'.format(material)
+        bc = BasicCrawler()
+        res = bc.get_soup(url, safetime=(3,5))
+        
+        companies = res.find_all('div', class_='company')
+        company_names = [i.find('div', class_ = 'coname').text for i in companies]
+   
+        return company_names
     
-    pd.set_option('max_colwidth',200)
-    pd.set_option('max_columns',None) 
+
+
+    def get_thomasnet_supplier_link(self, supplier_name = 'Industrial Plastic Supply'):
+        search_name = re.sub('[^\w]',' ', supplier_name).replace(' ','+')
+        url = "https://www.thomasnet.com/search.html?WTZO=Find+Suppliers&cov=NA&searchx=true&what={}&which=prod".format(search_name)
+        bc = BasicCrawler()
+        res = bc.get_soup(url, safetime=(3,5))
+        box = res.find('div',class_="search-list")
     
+        link = None
+        if box.find('h2').text == 'Suppliers by Name':
+            anchor = box.find('li').find('a')
+            link = 'https://www.thomasnet.com/' + anchor['href']
+        
+        print(link)
+        
+        return link
+    
+    def get_bizdetails(self, url_company = 'https://www.thomasnet.com//profile/00281106/industrial-plastic-supply-inc.html?cid=281106&cov=NA&searchpos=1&what=Industrial+Plastic+Supply&which=comp'):
+        name = None
+        revenue = None
+        
+        bc = BasicCrawler()
+        res = bc.get_soup(url_company, safetime=(3,5))
+        
+        anchor = res.select('#copro_naft > div.codetail > h1')
+        name = anchor[0].text
+        link = anchor[0].find('a')['href']
+            
+        details_block = res.select('#copro_bizdetails')
+        columns = details_block[0].find_all('div', class_ = 'match-height')
+        
+        bds = columns[1].find_all('div', class_ = 'bizdetail')
+        for bd in bds:
+            try:
+                bd_header = str.strip(bd.find('div').text)
+            except Exception:
+                 bd_header = None
+            
+            if bd_header == 'Annual Sales:':
+                revenue = bd.find('li').text
+        
+        return name, link, revenue
+    
+    def run(self, materials):
+        # the material name must be prefict
+        
+        df = pd.DataFrame()
+        
+        names = []
+        links = []
+        revenues = []
+        
+        for material in materials:
+            supplier_names = self.get_suppliers(material)
+            link = self.get_thomasnet_supplier_link(supplier_names[0])
+            name, link, revenue = self.get_bizdetails(link)
+            
+            names.append(name)
+            links.append(link)
+            revenues.append(revenue)
+        
+        df['name'] = names
+        df['link'] = links
+        df['revenue'] = revenues
+        
+        print(df)
+
+    
+def test():
     suppliers = [] #"Jabil", "Sanmina", "Thermo Fisher Diagnostics", "IVEK", "Randox Laboratories", "Inpeco", "Nypro", "Carclo", "Bio-Rad Laboratories"]
     
     revenues = []
@@ -134,11 +214,20 @@ if __name__ == '__main__':
     
     print(result)
     result.to_csv('SPIDER.csv')
+
+
+
+if __name__ == '__main__':
     
-    res = get_thomasnet_supplier_links(supplier_names=["sanmina"])
-    print(res)
+    pd.set_option('max_colwidth',200)
+    pd.set_option('max_columns',None) 
     
+    tc = ThomasnetCrawler()
+    tc.run(['plastics'])
     
+
+    
+   
         
         
         
