@@ -291,6 +291,11 @@ class WgPreprocess():
         self.df.price = self.df.price.astype('float')
         self.df.reset_index()
         
+        self.df.start_date = pd.to_datetime(self.df.start_date)
+        self.df.end_date = pd.to_datetime(self.df.end_date)
+        self.df['duration_month'] = (self.df.end_date - self.df.start_date).dt.days/30
+        self.df['rent_type'] = pd.cut(self.df['duration_month'], bins=3, labels=['short','middle','long'])
+        
         
         return self.df
     

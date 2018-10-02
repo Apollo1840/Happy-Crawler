@@ -15,6 +15,8 @@ import os
 import time
 import random
 import urllib
+import threading
+from math_tools import cut_list
 
 class BasicCrawler():
     history_ua_=[]
@@ -30,6 +32,7 @@ class BasicCrawler():
              self.generate_proxies()
              
         self.response_ = None
+        self.name = random.randint(1000,2000)
     
     def get(self, url, safetime=(0,0)):
         
@@ -96,16 +99,16 @@ class BasicCrawler():
     def generate_proxies(self): 
         print('generate proxies')
         
-        if len(self.proxies_list_) == 0:
+        while len(self.proxies_list_) == 0:
             print('creat list\n')
-            self.create_proxies_list()
-
+            self.create_proxies_list()         
+        assert len(self.proxies_list_)>0, self.name
         self.proxies_ = self.proxies_list_.pop(0)
         print('remain_ips:{}'.format(len(self.proxies_list_)))        
         
     def create_proxies_list(self):
         def spider_proxy():         
-            proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=867173409065270182&num=10&anonymous=5&result_fields=1,2'
+            proxy_url = 'https://proxyapi.mimvp.com/api/fetchopen.php?orderid=869291819078202384&num=20&anonymous=5&result_fields=1,2'
             req = urllib.request.Request(proxy_url)
             content = urllib.request.urlopen(req, timeout=30).read()
             proxy_list = content.decode().split("\n")
@@ -124,6 +127,7 @@ class BasicCrawler():
                 return None
         
         self.proxies_list_.extend(list(filter(None, [modify_proxies(proxy) for proxy in spider_proxy()])))
+        time.sleep(1)
         print('remain_ips:{}'.format(len(self.proxies_list_))) 
     
     def get_soup(self, url, safetime=(0,0)): 
@@ -138,6 +142,13 @@ class BasicCrawler():
         soup = BeautifulSoup(self.response_.text,'lxml')
         return soup
     
+    def get_soups(self, urls, safetime=(0,0)):
+        soups = []
+        for url in urls:
+            soups.append(self.get_soup(url, safetime))
+        return soups
+            
+    
     def save_html(self, name='page'):
         # use get() or get_soup() first
         
@@ -148,12 +159,65 @@ class BasicCrawler():
     
     def probe(self, soup):
         return True
+
+
+class BasicCrawlerGroup():
+    
+    def __init__(self, num_crawler=1, headers=None, proxies=None):
+        self.crawlers=[]
+        for i in range(num_crawler):
+            bc = BasicCrawler(headers=headers, proxies=proxies)
+            print(bc.name)
+            self.crawlers.append(bc)
+        print('\n ----- crawler group ready  ---- \n')
+    
+    def get_soups(self, urls, safetime=(0,0)):
+        def add_soup(bc, urls, safetime):
+            soups.extend(bc.get_soups(urls, safetime=safetime))
+           
+        urls_parts = cut_list(urls, len(self.crawlers))
+        soups = []
+        thread_list=[]
+        for i in range(len(self.crawlers)):
+                t = threading.Thread(target=add_soup, 
+                                     name='worker_{}'.format(i), 
+                                     args=(self.crawlers[i], urls_parts[i], safetime)
+                                    )
+                thread_list.append(t)
+                t.start()
+        for t in thread_list:
+            t.join()
+        
+        return soups
+            
+        
+        
+        
+            
         
 
 if __name__ == '__main__':
-    crawler = BasicCrawler()
-    soup = crawler.get_soup('https://www.bbc.com/news')
-    print(soup.find('a'))
+    # crawler = BasicCrawler()
+    # soup = crawler.get_soup('https://www.bbc.com/news')
+    # print(soup.find('a'))
+    
+    t1 = time.time()
+    bcg = BasicCrawlerGroup(num_crawler=4, proxies='auto')
+    soups = bcg.get_soups(['https://www.bbc.com/news' for i in range(20)], safetime=(2,2))
+    print(soups[0].find('a'))
+    t11=time.time() - t1
+    print(t11)
+    
+    t1 = time.time()
+    soups = []
+    bc = BasicCrawler(proxies='auto')
+    for url in ['https://www.bbc.com/news' for i in range(20)]:
+        soups.append(bc.get_soup(url, safetime=(2,2)))
+    t12=time.time() - t1
+    print(t12)
+    print(t11)
+    
+    
     
 
        
