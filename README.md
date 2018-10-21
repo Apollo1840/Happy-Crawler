@@ -101,7 +101,7 @@ Or join us !!!
 
 (contact: 2285664798@qq.com, wechat:zoucongyu1109) 
 
-### 3. Learning material -> tutorial
+### 3. Learning material -> basicKnowledge
 
 It has nothing to do with BasicCrawler, just some learning material of how to build a crawler from scrath.
 
