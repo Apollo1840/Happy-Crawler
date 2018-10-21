@@ -42,11 +42,11 @@ It is inside bc3.py, to use BasicCrawler just copy bc3.py to your working direct
 
 In bc3_testor.py, you will find how to use BasicCrawler and BasicCrawlerGroup
 
-### 2. other crawlers -> projects
+### 2. Other crawlers -> projects
 
 They are in projects folder.
 
-### 3. learning material -> tutorial
+### 3. Learning material -> tutorial
 
 It has nothing to do with BasicCrawler, just some learning material of how to build a crawler from scrath.
 
