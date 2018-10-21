@@ -23,7 +23,8 @@ import threading
 class BasicCrawler():
     history_ua_=[]
     
-    def __init__(self, headers=None, proxies=None, api_ID='869291819078202384', num_proxies=20, safetime=(0,0)):
+    def __init__(self, headers=None, proxies=None, api_ID='869291819078202384', num_proxies=20, 
+                 safetime=(0,0), patience = 10):
         
         # headers do not need to explain
         # api_ID and num_proxies is needed for self.generate_proxies_list()
@@ -63,12 +64,33 @@ class BasicCrawler():
         self.keep_note = False
         self.note_ = {}
         self.safetime = safetime
+        self.patience = patience
         
         # ready for response
         self.response_ = None
         
-    def run(self, url, patience=10):
-        return self.get_soup(url, patience=10) 
+    def run(self, urls, save_html=True):
+        
+        if not isinstance(urls,list):
+            urls = [urls]
+        
+        i = 0
+        self.name_page_ += str(i)
+        soups = []
+        for url in urls:
+            # print(i) 
+            i += 1           
+            soups.append(self.get_soup(url))            
+            if save_html:
+                self.name_page_ = self.name_page_[:-1] + str(i)
+                self.save_html()                
+            
+            
+        if len(soups) == 1:
+            return soups[0]
+        else:
+            return soups
+
  
     def get(self, url):
         
@@ -95,18 +117,26 @@ class BasicCrawler():
         return soup
     
     
-    def get_soup(self, url, patience=10): 
+    def get_soup(self, url): 
         soup = self.get_soup_trival(url)
-        while not self.probe(soup) and patience > 0 and self.proxies_ is not None:
+        while not self.probe(soup) and self.patience > 0 and self.proxies_ is not None:
             self.generate_proxies()
             soup = self.get_soup_trival(url)
-            patience -= 1
+            self.patience -= 1
         
-        if patience > 0:
+        if self.patience > 0:
             return soup
         else:
             print('been detected')
             raise Exception
+    
+    def get_soups(self, urls):
+        soups = []
+        for url in urls:
+            soups.append(self.get_soup(url))
+        return soups
+    
+    
     
     
     def generate_headers(self):
@@ -192,28 +222,20 @@ class BasicCrawler():
         proxies_list = [modify_proxies(proxy) for proxy in proxies_list_raw]
         
         self.proxies_list_.extend(list(filter(None, proxies_list)))
-        return self.proxies_list_      
-    
-  
-    def get_soups(self, urls):
-        soups = []
-        for url in urls:
-            soups.append(self.get_soup(url))
-        return soups
-            
+        return self.proxies_list_            
     
     def save_html(self):
         # use get() first, note: get_soup() contains get()
         
-        working_folder = 'material/{}'.format(self.working_folder_)
+        working_folder = 'outputs/{}'.format(self.working_folder_)
         if not os.path.exists(working_folder):
-            os.mkdir(working_folder)
+            os.makedirs(working_folder)
         save_path = '{}/{}.html'.format(working_folder, self.name_page_)    
         
         self.response_.encoding='utf-8'
-        with open('material/page.txt','w', encoding="utf-8") as f:
+        with open('outputs/page.txt','w', encoding="utf-8") as f:
             f.write(self.response_.text)
-        os.rename('material/page.txt', save_path)
+        os.rename('outputs/page.txt', save_path)
         
         if self.keep_note:
             self.note.update({self.response_.url : save_path})
@@ -222,11 +244,10 @@ class BasicCrawler():
         i = 0
         self.name_page_ += str(i)
         for url in urls:
-            self.get(url)
-            self.name_page_ = self.name_page_[:-1]
+            # print(i)
             i += 1
-            self.name_page_ += str(i)
-            print(i)
+            self.get(url)
+            self.name_page_ = self.name_page_[:-1] + str(i)
             self.save_html()
             
             
