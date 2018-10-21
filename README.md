@@ -87,6 +87,10 @@ In real application case, it will be more complex:
 
 But BasicCrawler and BasicCrawlerGroup can solve this problem for you.
 
+For example, for the first question, BasicCrawler can solve it automatically adjusting the headers:
+
+    bc = BasicCrawler(headers='auto')
+
 If you want to know more about BasicCrawler please go to bc3_tutorial.py.
 
 bc3_testor.py is for our testor to test the functionality and limitness of our BasicCrawler.
