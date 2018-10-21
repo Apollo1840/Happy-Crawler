@@ -5,7 +5,7 @@ There are crawlers made by HC-team. The one I want to introduce you most is the 
 ## BasicCrawler
 
 <p align="center"> 
-    <img src="https://screenshot.net/zh/4wxdjc3" alt="the BC brand">
+    <img src="https://i.screenshot.net/4wxdjc3" alt="the BC brand">
 </p>
 
 BasicCrawler is an crawler framework, which can be modified to suit your needs of different web cralwering projects. 
