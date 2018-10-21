@@ -43,9 +43,7 @@ This program will go to one of the tripadvisor website, and print the title of t
 
 Of course, This program does not use the any advantage of BasicCrawler.
 
-As I said, BasicCrawler is convient to deploy multiple tasks, how can we do that?
-
-I will explain it in a more complex case. Now, our goal is:
+As I said, BasicCrawler is convient to deploy multiple tasks, how can we do that? I will explain it in a more complex case. Now, our goal is:
 
 <i>Go to one of the tripadvisor website, and get 5 restaurant names and its rating as csv file.</i>
 
@@ -79,17 +77,13 @@ But in fact, with BasicCrawler, we even have a simplier way. Without getting the
 
     bc.get_df(urls[:5], get_name_rating)
 
-Down, CSV file will be saved in outputs folder. 
+Down, CSV file will be saved in outputs folder. But this is just one example of how to use BasicCrawler.
 
-But this is just one example of how to use BasicCrawler.
+In real application case, it will be more complex:
 
-In real application case, it will be more complex.
-
-Sometimes, the website has good sense of anti-crawler, you will not get the same html as you read, because your crawler has been identified as a crawler.
-
-Sometimes, you dont know when your IP will be baned, so you can not let the programm run overnight task.
-
-Sometimes, you have huge number of websites to been scrape, you need multiple crawlers work at same time.
+* Sometimes, the website has good sense of anti-crawler, you will not get the same html as you read, because your crawler has been identified as a crawler.
+* Sometimes, you dont know when your IP will be baned, so you can not let the programm run overnight task.
+* Sometimes, you have huge number of websites to been scrape, you need multiple crawlers work at same time.
 
 But BasicCrawler and BasicCrawlerGroup can solve this problem for you.
 
