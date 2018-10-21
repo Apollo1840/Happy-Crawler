@@ -45,47 +45,51 @@ Of course, This program does not use the any advantage of BasicCrawler.
 
 As I said, BasicCrawler is convient to deploy multiple tasks, how can we do that?
 
-Now we are try to go to one of the tripadvisor website, and get 5 restaurant names and its rating as csv file.
+I will explain it in a more complex case. Now, our goal is:
 
-First lets get the urls of those 5 restaurant.
+<i>Go to one of the tripadvisor website, and get 5 restaurant names and its rating as csv file.</i>
+
+Assume our colleagues has already prepared the urls on the tripadvisor website for you by BasicCrawler:
 
     bc = BasicCrawler(safetime=(1,2)) # safetime means the crawler will wait 1 or 2 seconds for next scraping, this will increase the concealment of the crawler
     url = 'https://www.tripadvisor.com/Restaurants-g187309-Munich_Upper_Bavaria_Bavaria.html'
     soup = bc.run(url, save_html=False)
     
-    # this part retrieve a list of urls. Ignore this part if you do not know how to use BeatifulSoup
+    # this part retrieve a list of urls.
     restaurant_anchors = soup.find_all('a', class_='property_title')
     urls = ['https://www.tripadvisor.com/'+anchor['href'] for anchor in restaurant_anchors]
 
-Then, we can easily use BasicCrawler to get the soups by simpliy use run function. 
-
-BasicCrawler will automatically detected that you want multiple soups.
-
-    soups = bc.run(urls[:5]) # here I only want first 5 pages
-
-when we get the soups, every thing is easy now. Assume your colleague has write a bs function for you:
+and he has also wroten a bs function for us:
 
     # define a function to find some element in the soup
     def get_name_rating(soup):
         return [soup.find('h1', class_='fr').text, soup.find('span', class_='overallRating').text]
 
-In the end, we just need to do something like:
+Our task can be very easy to be solved by BasicCrawler now. 
 
-    data = [get_name_rating(soup) for soup in soups]
-    print(data)
-    
-    # then we can use pandas to convert it to csv file
-    import pandas as pd
-    df = pd.DataFrame(data)
-    df.to_csv('result.csv')
+First just use run to get the soups:
 
-Down, but this is just one example of how to use BasicCrawler, in real application case, it will be more complex.
+    soups = bc.run(urls[:5]) # here I only want first 5 pages
 
-If the website has good sense of anti-crawler, you will not get the same html as you read, because your crawler has been identified as a crawler.
+BasicCrawler will automatically detected that you want multiple soups. 
 
-Sometimes you dont know when your IP will be baned so you can not let the programm run overnight task.
+After we get the soups, we can use python list operation to get the data and use pandas to convert it to dataframe and output it as CSV file.
 
-Sometimes you have huge number of websites to been scrape, you need multiple crawlers work at same time.
+But in fact, with BasicCrawler, we even have a simplier way. Without getting the soups, just directly use get_df function.
+
+    bc.get_df(urls[:5], get_name_rating)
+
+Down, CSV file will be saved in outputs folder. 
+
+But this is just one example of how to use BasicCrawler.
+
+In real application case, it will be more complex.
+
+Sometimes, the website has good sense of anti-crawler, you will not get the same html as you read, because your crawler has been identified as a crawler.
+
+Sometimes, you dont know when your IP will be baned, so you can not let the programm run overnight task.
+
+Sometimes, you have huge number of websites to been scrape, you need multiple crawlers work at same time.
 
 But BasicCrawler and BasicCrawlerGroup can solve this problem for you.
 

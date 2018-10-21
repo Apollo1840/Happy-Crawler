@@ -18,6 +18,8 @@ import random
 
 import threading
 
+import pandas as pd
+
 
 
 class BasicCrawler():
@@ -250,6 +252,12 @@ class BasicCrawler():
             self.name_page_ = self.name_page_[:-1] + str(i)
             self.save_html()
             
+    def get_df(self, urls, func, save_csv=True, path='outputs/'):
+        soups = self.get_soups(urls)
+        data = [func(soup) for soup in soups]
+        df = pd.DataFrame(data)
+        df.to_csv(path+'result.csv')
+        return df
             
     def probe(self, soup):
         return True
@@ -354,7 +362,7 @@ if __name__ == '__main__':
     for soup in soups:
         print(soup.find('a'))
 
-    
+ 
    
     
     
