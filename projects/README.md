@@ -17,15 +17,15 @@ Those crawlers are only designed for research purposes, no commercial usage is a
 The user should take the fully responsibility for illegal use and intented attack.
 
 
-## 1) bbc_crawler:
+##### 1) bbc_crawler:
 
 It can go to the website of bbc, and fetch some news title and corresponding link.
 
-## 2) douban_crawler:
+##### 2) douban_crawler:
 
 It can go to douban/blabla, get the titles of posts, draw a wordCloud by words in titles.
 
-## 3) wg_crawler:
+##### 3) wg_crawler:
 
 It can go to wg_gesuch, and do some data analysis based on data on that site.
 
@@ -58,7 +58,7 @@ Example:
 
 ![the sample picture](https://i.screenshot.net/28dzdb4)
 
-### 2.1 Pages and flags
+#### 2.1 Pages and flags
 
 You can adjust the pages and interested flag of words.
         
@@ -66,14 +66,14 @@ You can adjust the pages and interested flag of words.
 
 Some basic flags are: "n" for noun，“a” for adj，“v” for verb. For more details, please see: https://blog.csdn.net/suibianshen2012/article/details/53487157
 
-### 2.2 Heat calculation
+#### 2.2 Heat calculation
 
 You can also adjust the method to calculate heat, currently it supports three different method.
 
         d_c.run(include_heat=False)  # this will only consider the frequency of words.
         d_c.run(adjustment = 'log')  # this is a compromise between frequency of words and the heat of post. Default is None.
 
-### 2.3 Get raw data
+#### 2.3 Get raw data
 
 The douban_crawler also provide other possibilities to visualize the data.
 
@@ -99,7 +99,7 @@ If you want to access the DataFrame:
         the_dataframe = w_c.df
 
         
-### 3.1 Relationship between room size and price
+#### 3.1 Relationship between room size and price
         
         w_c = wg_crawler()
         w_a = wg_analyse(w_c)   # to analyse the data, we need to first connect analyser to the crawler 
