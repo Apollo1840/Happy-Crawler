@@ -41,8 +41,14 @@ How to use it, see this on-hand tutorial:
 
 This program will go to one of the tripadvisor website, and print the title of the website, and save the html file of the web.
 
-This program of course do not use the any advantage of BasicCrawler, as I said, BasicCrawler is convient to deploy multiple tasks, how can we do that?:
-    
+Of course, This program does not use the any advantage of BasicCrawler.
+
+As I said, BasicCrawler is convient to deploy multiple tasks, how can we do that?
+
+Now we are try to go to one of the tripadvisor website, and get 5 restaurant names and its rating as csv file.
+
+First lets get the urls of those 5 restaurant.
+
     bc = BasicCrawler(safetime=(1,2)) # safetime means the crawler will wait 1 or 2 seconds for next scraping, this will increase the concealment of the crawler
     url = 'https://www.tripadvisor.com/Restaurants-g187309-Munich_Upper_Bavaria_Bavaria.html'
     soup = bc.run(url, save_html=False)
@@ -50,20 +56,30 @@ This program of course do not use the any advantage of BasicCrawler, as I said, 
     # this part retrieve a list of urls. Ignore this part if you do not know how to use BeatifulSoup
     restaurant_anchors = soup.find_all('a', class_='property_title')
     urls = ['https://www.tripadvisor.com/'+anchor['href'] for anchor in restaurant_anchors]
-    
+
+Then, we can easily use BasicCrawler to get the soups by simpliy use run function. 
+
+BasicCrawler will automatically detected that you want multiple soups.
+
     soups = bc.run(urls[:5]) # here I only want first 5 pages
-    
+
+when we get the soups, every thing is easy now. Assume your colleague has write a bs function for you:
+
     # define a function to find some element in the soup
-    def find_name_rating(soup):
+    def get_name_rating(soup):
         return [soup.find('h1', class_='fr').text, soup.find('span', class_='overallRating').text]
+
+In the end, we just need to do something like:
+
+    data = [get_name_rating(soup) for soup in soups]
+    print(data)
     
-    print([find_name_rating(soup) for soup in soups])
     # then we can use pandas to convert it to csv file
-    
+    import pandas as pd
+    df = pd.DataFrame(data)
+    df.to_csv('result.csv')
 
-This program will go to one of the tripadvisor website, and get you the 5 restaurant names and its rating.
-
-This is just one example of how to use BasicCrawler, in real application case, it will be more complex.
+Down, but this is just one example of how to use BasicCrawler, in real application case, it will be more complex.
 
 If the website has good sense of anti-crawler, you will not get the same html as you read, because your crawler has been identified as a crawler.
 
