@@ -17,6 +17,9 @@ def cut_range(a, b, bins):
     return result
 
 def cut_list(the_list, bins):
+    if len(the_list) < bins:
+        return [None for _ in range(bins)]  # it is important to have None here (for proxies management)
+    
     num_last = len(the_list)%bins
     if num_last !=0:
         the_last = the_list[-num_last:]

@@ -17,14 +17,13 @@ import time
 import random
 
 import threading
-import math_tools as mt
 
 
 
 class BasicCrawler():
     history_ua_=[]
     
-    def __init__(self, headers=None, proxies=None, api_ID=None, num_proxies=20, safetime=(0,0)):
+    def __init__(self, headers=None, proxies=None, api_ID='869291819078202384', num_proxies=20, safetime=(0,0)):
         
         # headers do not need to explain
         # api_ID and num_proxies is needed for self.generate_proxies_list()
@@ -68,7 +67,8 @@ class BasicCrawler():
         # ready for response
         self.response_ = None
         
-        
+    def run(self, url, patience=10):
+        return self.get_soup(url, patience=10) 
  
     def get(self, url):
         
@@ -97,7 +97,7 @@ class BasicCrawler():
     
     def get_soup(self, url, patience=10): 
         soup = self.get_soup_trival(url)
-        while not self.probe(soup) and patience > 0:
+        while not self.probe(soup) and patience > 0 and self.proxies_ is not None:
             self.generate_proxies()
             soup = self.get_soup_trival(url)
             patience -= 1
@@ -157,7 +157,6 @@ class BasicCrawler():
     def create_proxies_list(self, proxies = None, headers = None):
         # the proxies and headers here are for getting ip from website
         
-        if self.api_ID_ == None: self.api_ID_ = '869291819078202384'
         if self.num_proxies_ == None: self.num_proxies_ = 17
         if self.hide_ip_ == True and len(self.proxies_list_) > 0: proxies = self.proxies_list_[0]
         
@@ -237,11 +236,11 @@ class BasicCrawler():
 
 class BasicCrawlerGroup():
     
-    def __init__(self, num_crawler=1, headers=None, proxies=None, api_ID=None, num_proxies = 20, safetime=(0,0)):
+    def __init__(self, num_crawler=2, headers=None, proxies=None, api_ID='869291819078202384', num_proxies = 20, safetime=(0,0)):
         self.crawlers=[]
         self.main_crawler = BasicCrawler(headers=headers, proxies=proxies, api_ID=api_ID, num_proxies=num_proxies*num_crawler, safetime=safetime)
         
-        main_proxies_list = mt.cut_list(self.main_crawler.proxies_list_, num_crawler)
+        main_proxies_list = cut_list(self.main_crawler.proxies_list_, num_crawler)
         # cut_list will cut the list into several parts (roughly equal length)
         
         for i in range(num_crawler):
@@ -252,20 +251,24 @@ class BasicCrawlerGroup():
             
         print('\n ----- crawler group ready  ---- \n')  
     
+    
     def run(self, urls, task='get soup'):
-        def work(bc, urls):
+        def action(bc, urls):
             print('crawler {} is working now...'.format(bc.name))
             
             if task == 'get soup':
                 soups.extend(bc.get_soups(urls))
             elif task == 'save html':
                 bc.save_htmls(urls)
-            
-        urls_parts = mt.cut_list(urls, len(self.crawlers))
+        
+        if task == 'save html':
+            self.rename_crawlers_output()
+
+        urls_parts = cut_list(urls, len(self.crawlers))
         soups = []
         thread_list=[]
         for i in range(len(self.crawlers)):
-                t = threading.Thread(target=work, 
+                t = threading.Thread(target=action, 
                                      name='worker_{}'.format(i), 
                                      args=(self.crawlers[i], urls_parts[i])
                                     )
@@ -275,72 +278,61 @@ class BasicCrawlerGroup():
             t.join()
         
         return soups
+        
     
     def rename_crawlers_output(self):
         i = 0
         for crawler in self.crawlers:
             crawler.name_page_ += '_{}_'.format(i)
             i += 1
-        
-        
-    
             
+            
+
+# math-tools
+import math
+import numpy as np
+
+def cut_range(a, b, bins):
+    l = range(a, b)
+    le = math.ceil((b-a)/bins)
+    result = []
+    for i in range(bins):
+        result.append(l[i*le:(i+1)*le])
+    return result
+
+def cut_list(the_list, bins):
+    if len(the_list) < bins:
+        return [None for _ in range(bins)]  # it is important to have None here (for proxies management)
+    
+    num_last = len(the_list)%bins
+    if num_last !=0:
+        the_last = the_list[-num_last:]
+        the_list = the_list[:-num_last]
+    index = np.arange(len(the_list))  
+    #return [piece for piece in np.hsplit(index,bins)]
+    result = [the_list[piece[0]:piece[-1]+1] for piece in np.hsplit(index,bins)]
+    if num_last !=0:
+        for i in range(len(the_last)):
+            result[i].extend([the_last[i]])
+    return result
+
         
-
-def general_test():
-    test_page = 'http://zoucongyu.strikingly.com'
-    
-    bcg = BasicCrawlerGroup(proxies='auto', headers='auto', num_crawler=2)
-    
-    print(len(bcg.main_crawler.proxies_list_))
-    print(len(bcg.crawlers[0].proxies_list_))
-    print(bcg.crawlers[0].proxies_)
-    print(len(bcg.crawlers[1].proxies_list_))
-    print(bcg.crawlers[1].proxies_)
-    
-    soup = bcg.crawlers[0].get_soup(test_page)
-    print(soup.find('a'))
-    
-    soup = bcg.crawlers[1].get_soup(test_page)
-    print(soup.find('a'))
-    
-
-def bcg_comparison_test():
-    test_page= 'https://news.baidu.com'
-    
-    
-    t1 = time.time()
-    bcg = BasicCrawlerGroup(num_crawler=4, proxies='auto', safetime=(2,2))
-    soups = bcg.run([test_page for i in range(40)])
-    print(soups[-1].find('a'))
-    t11=time.time() - t1
-    print(t11)
-    
-    t1 = time.time()
-    soups = []
-    bc = BasicCrawler(proxies='auto', safetime=(2,2))
-    for url in [test_page for i in range(40)]:
-        soups.append(bc.get_soup(url))
-    t12=time.time() - t1
-    print(t12)
-    print(t11)
-    
     	     
-        
-            
-        
-
 if __name__ == '__main__':
-    # crawler = BasicCrawler()
-    # soup = crawler.get_soup('https://www.bbc.com/news')
-    # print(soup.find('a'))
+    
+    test_page =  'https://news.baidu.com'
+    
+    crawler = BasicCrawler()
+    soup = crawler.run(test_page)
+    print(soup.find('a'))
+    
+    # BasicCrawlerGroup is faster
+    crawlers = BasicCrawlerGroup()
+    soups = crawlers.run([test_page for _ in range(5)])
+    
+    for soup in soups:
+        print(soup.find('a'))
 
-    # bcg_comparison_test()
-    # crawler.save_htmls(['https://news.baidu.com' for _ in range(10)])
-    test_page= 'https://news.baidu.com'
-    bcg = BasicCrawlerGroup(num_crawler=4, proxies='auto', safetime=(2,2))
-    bcg.rename_crawlers_output()
-    bcg.run([test_page for i in range(12)], task='save html')
     
    
     
