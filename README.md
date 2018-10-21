@@ -22,7 +22,7 @@ BasicCrawlerGroup is build on BasicCrawler, which acts like mutiple crawlers wor
 
 It is faster, harder to been catch and more stable.
 
-Interessed? want to have a try? see Navigation channel:
+interested? want to have a try? see Navigation channel:
 
 ## Navigation
 
