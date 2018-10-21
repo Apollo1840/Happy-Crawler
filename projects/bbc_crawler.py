@@ -39,7 +39,7 @@ if __name__ == '__main__':
     
     crawler = bbcCrawler()
     print(crawler.html)
-    crawler.header_link('material/news.txt')
+    crawler.header_link('outputs/news.txt')
     
     
         
