@@ -70,8 +70,6 @@ class BasicCrawler():
         
         # ready for response
         self.response_ = None
-    
-    # -- interface    
         
     def run(self, urls, save_html=True):
         '''
@@ -81,36 +79,27 @@ class BasicCrawler():
         
         '''
         
-        if not isinstance(urls,list): urls = [urls]
+        if not isinstance(urls,list):
+            urls = [urls]
         
-        soups = self.get_soups(urls)             
-        if save_html:
-            self.save_htmls(urls)
+        i = 0
+        self.name_page_ += str(i)
+        soups = []
+        for url in urls:
+            # print(i) 
+            i += 1           
+            soups.append(self.get_soup(url))            
+            if save_html:
+                self.name_page_ = self.name_page_[:-1] + str(i)
+                self.save_html()                
             
-        if len(soups) == 1: return soups[0]
-        else: return soups
-    
-    
-    def get_soup(self, urls):
-        self.run(urls, save_html=False)
-    
-    
-    def save_html(self, urls):  
-        if not isinstance(urls,list): urls = [urls]
-        self.save_htmls(urls)
-    
-    
-    def get_df(self, urls, func, save_csv=True, path='outputs/'):
-        soups = self.get_soups(urls)
-        data = [func(soup) for soup in soups]
-        df = pd.DataFrame(data)
-        df.to_csv(path+'result.csv')
-        return df   
-    
-    
-    # -- build in function
-    
-    # basics:
+            
+        if len(soups) == 1:
+            return soups[0]
+        else:
+            return soups
+
+ 
     def get(self, url):
         
         time.sleep(random.randint(*self.safetime))
@@ -130,19 +119,13 @@ class BasicCrawler():
         return response
     
     
-    def probe(self, soup):
-        return True
-    
-
-    # blocks: 
-    def get_soups(self, urls):
-        soups = []
-        for url in urls:
-            soups.append(self.get_soup_single(url))
-        return soups
+    def get_soup_trival(self, url):
+        self.get(url)
+        soup = BeautifulSoup(self.response_.text,'lxml')
+        return soup
     
     
-    def get_soup_single(self, url): 
+    def get_soup(self, url): 
         soup = self.get_soup_trival(url)
         while not self.probe(soup) and self.patience > 0 and self.proxies_ is not None:
             self.generate_proxies()
@@ -155,39 +138,13 @@ class BasicCrawler():
             print('been detected')
             raise Exception
     
-    
-    def get_soup_trival(self, url):
-        self.get(url)
-        soup = BeautifulSoup(self.response_.text,'lxml')
-        return soup
-    
-
-    def save_htmls(self, urls):
-        i = 0
-        self.name_page_ += str(i)
+    def get_soups(self, urls):
+        soups = []
         for url in urls:
-            # print(i)
-            i += 1
-            self.get(url)
-            self.name_page_ = self.name_page_[:-1] + str(i)
-            self.save_html_single()
-     
-        
-    def save_html_single(self):
-        # use get() first, note: get_soup() contains get()
-        
-        working_folder = 'outputs/{}'.format(self.working_folder_)
-        if not os.path.exists(working_folder):
-            os.makedirs(working_folder)
-        save_path = '{}/{}.html'.format(working_folder, self.name_page_)    
-        
-        self.response_.encoding='utf-8'
-        with open('outputs/page.txt','w', encoding="utf-8") as f:
-            f.write(self.response_.text)
-        os.rename('outputs/page.txt', save_path)
-        
-        if self.keep_note:
-            self.note.update({self.response_.url : save_path})
+            soups.append(self.get_soup(url))
+        return soups
+    
+    
     
     
     def generate_headers(self):
@@ -275,10 +232,41 @@ class BasicCrawler():
         self.proxies_list_.extend(list(filter(None, proxies_list)))
         return self.proxies_list_            
     
+    def save_html(self):
+        # use get() first, note: get_soup() contains get()
+        
+        working_folder = 'outputs/{}'.format(self.working_folder_)
+        if not os.path.exists(working_folder):
+            os.makedirs(working_folder)
+        save_path = '{}/{}.html'.format(working_folder, self.name_page_)    
+        
+        self.response_.encoding='utf-8'
+        with open('outputs/page.txt','w', encoding="utf-8") as f:
+            f.write(self.response_.text)
+        os.rename('outputs/page.txt', save_path)
+        
+        if self.keep_note:
+            self.note.update({self.response_.url : save_path})
+    
+    def save_htmls(self, urls):
+        i = 0
+        self.name_page_ += str(i)
+        for url in urls:
+            # print(i)
+            i += 1
+            self.get(url)
+            self.name_page_ = self.name_page_[:-1] + str(i)
+            self.save_html()
             
-
+    def get_df(self, urls, func, save_csv=True, path='outputs/'):
+        soups = self.get_soups(urls)
+        data = [func(soup) for soup in soups]
+        df = pd.DataFrame(data)
+        df.to_csv(path+'result.csv')
+        return df
             
-
+    def probe(self, soup):
+        return True
 
 
 class BasicCrawlerGroup():
@@ -333,8 +321,8 @@ class BasicCrawlerGroup():
             crawler.name_page_ += '_{}_'.format(i)
             i += 1
             
- 
-           
+            
+
 # math-tools
 import math
 import numpy as np

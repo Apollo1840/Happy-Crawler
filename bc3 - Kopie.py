@@ -11,13 +11,13 @@ import requests
 from requests.exceptions import ProxyError
 from requests.exceptions import SSLError
 from requests.exceptions import ConnectTimeout
+
 from bs4 import BeautifulSoup
 import os
 import time
 import random
 
 import threading
-
 import pandas as pd
 
 
@@ -83,7 +83,7 @@ class BasicCrawler():
         
         if not isinstance(urls,list): urls = [urls]
         
-        soups = self.get_soups(urls)             
+        self.get_soups(urls)             
         if save_html:
             self.save_htmls(urls)
             
