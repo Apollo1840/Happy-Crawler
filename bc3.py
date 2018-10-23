@@ -25,6 +25,27 @@ import pandas as pd
 class BasicCrawler():
     history_ua_=[]
     
+    user_agents_ = ["Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko",
+            "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
+            "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)",
+            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0)",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 BIDUBrowser/8.3 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.277.400 QQBrowser/9.4.7658.400",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 UBrowser/5.6.12150.8 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 Safari/537.36 SE 2.X MetaSr 1.0",
+            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36 TheWorld 7"
+            ]
+    
+    cookies_ = ['__qca=P0-1364584360-1536347334653; _ga=GA1.2.1495173256.1536347336; __gads=ID=f60351a9ba08e194:T=1536347334:S=ALNI_MbbMZMhTc_K9zjRIl9mXfULbxE6XQ; last_city=90; last_type=0; login_token=cf47e8884526baf9be015fb0e41eeba0c3d7c6b18014df8ba1de55acc997e3f7932012d; dev_ref_no=FPTbO0; PHPSESSID=vhr1qqabb6t6jn8pa27fpi5gd4; OX_plg=swf|wmp|shk|pm; last_cat=0; X-Access-Token=0e23d203c687f84fe9c414bb9b1b53de59aeed2c; X-Refresh-Token=e949824ab71397cefe823a925d64cef00ad079ad; X-Client-Id=wg_desktop_website; X-Dev-Ref-No=FPTbO0; _gid=GA1.2.1174269582.1537624058; open_websocket=yes; conversation_list=; OX_sd=3',
+                'CONSENT=YES+DE.zh-CN+20150622-23-0; NID=139=Xq4f-VHxFzwsiydy4mpVohpciSkLChO9jeYv1dh-HQsu5lV3Qtz4ScYWtpPBBAlv6bJ0mRiAj1YWpifB5YSBrf3B9ek2mQgKI2Uyf9J2iABQJKRJ_3WpliQ2mVz8CD35; 1P_JAR=2018-9-22-18; UULE=a+cm9sZToxIHByb2R1Y2VyOjEyIHByb3ZlbmFuY2U6NiB0aW1lc3RhbXA6MTUzNzY0MTg2MTk3NzAwMCBsYXRsbmd7bGF0aXR1ZGVfZTc6NDgyMTQwMTYwIGxvbmdpdHVkZV9lNzoxMTYxNDYxNzZ9IHJhZGl1czozNjU4MDA=']
+        
+    
     def __init__(self, headers=None, proxies=None, api_ID='869291819078202384', num_proxies=20, 
                  safetime=(0,0), patience = 10):
         
@@ -36,7 +57,7 @@ class BasicCrawler():
         self.name = random.randint(1000,2000)
         
         if headers =='auto':
-            self.generate_headers()
+            self.generate_headers()            
         else:
             self.headers_ = headers
         
@@ -50,7 +71,6 @@ class BasicCrawler():
         
         if proxies =='auto':
             self.generate_proxies()
-            self.proxies_ = self.proxies_list_[0]
         
         elif isinstance(proxies, list):
             self.proxies_list_ = proxies
@@ -73,7 +93,7 @@ class BasicCrawler():
     
     # -- interface    
         
-    def run(self, urls, save_html=True):
+    def run(self, urls, is_save_html=True, is_local=False):
         '''
         It will return the soup of url to you. 
         If the input is urls, it can return soups (a list of soup).
@@ -83,21 +103,21 @@ class BasicCrawler():
         
         if not isinstance(urls,list): urls = [urls]
         
-        soups = self.get_soups(urls)             
-        if save_html:
-            self.save_htmls(urls)
+        soups = self.get_soups(urls, is_local=is_local)             
+        if is_save_html:
+            self.is_save_htmls(urls)
             
         if len(soups) == 1: return soups[0]
         else: return soups
     
     
-    def get_soup(self, urls):
-        self.run(urls, save_html=False)
+    def get_soup(self, urls, is_local=False):
+        self.run(urls, is_save_html=False, is_local=is_local)
     
     
-    def save_html(self, urls):  
+    def is_save_html(self, urls):  
         if not isinstance(urls,list): urls = [urls]
-        self.save_htmls(urls)
+        self.is_save_htmls(urls)
     
     
     def get_df(self, urls, func, save_csv=True, path='outputs/'):
@@ -135,18 +155,18 @@ class BasicCrawler():
     
 
     # blocks: 
-    def get_soups(self, urls):
+    def get_soups(self, urls, is_local=False):
         soups = []
         for url in urls:
-            soups.append(self.get_soup_single(url))
+            soups.append(self.get_soup_single(url, is_local=is_local))
         return soups
     
     
-    def get_soup_single(self, url): 
+    def get_soup_single(self, url, is_local=False): 
         soup = self.get_soup_trival(url)
         while not self.probe(soup) and self.patience > 0 and self.proxies_ is not None:
             self.generate_proxies()
-            soup = self.get_soup_trival(url)
+            soup = self.get_soup_trival(url, is_local=is_local)
             self.patience -= 1
         
         if self.patience > 0:
@@ -156,13 +176,17 @@ class BasicCrawler():
             raise Exception
     
     
-    def get_soup_trival(self, url):
-        self.get(url)
-        soup = BeautifulSoup(self.response_.text,'lxml')
+    def get_soup_trival(self, url, is_local=False):
+        if is_local:
+            with open(self.note_[url], 'rb') as f:
+                soup = BeautifulSoup(f,'html5lib')
+        else:
+            self.get(url)
+            soup = BeautifulSoup(self.response_.text,'lxml')
         return soup
     
 
-    def save_htmls(self, urls):
+    def is_save_htmls(self, urls):
         i = 0
         self.name_page_ += str(i)
         for url in urls:
@@ -170,10 +194,10 @@ class BasicCrawler():
             i += 1
             self.get(url)
             self.name_page_ = self.name_page_[:-1] + str(i)
-            self.save_html_single()
+            self.is_save_html_single()
      
         
-    def save_html_single(self):
+    def is_save_html_single(self):
         # use get() first, note: get_soup() contains get()
         
         working_folder = 'outputs/{}'.format(self.working_folder_)
@@ -189,33 +213,12 @@ class BasicCrawler():
         if self.keep_note:
             self.note.update({self.response_.url : save_path})
     
-    
     def generate_headers(self):
-        user_agents = ["Mozilla/5.0 (Windows NT 6.1; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.87 Safari/537.36 OPR/37.0.2178.32",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7 Safari/534.57.2",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.101 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586",
-            "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko",
-            "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)",
-            "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)",
-            "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0)",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 BIDUBrowser/8.3 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.80 Safari/537.36 Core/1.47.277.400 QQBrowser/9.4.7658.400",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 UBrowser/5.6.12150.8 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 Safari/537.36 SE 2.X MetaSr 1.0",
-            "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2564.116 Safari/537.36 TheWorld 7"
-            ]
-        
-        cookies = ['__qca=P0-1364584360-1536347334653; _ga=GA1.2.1495173256.1536347336; __gads=ID=f60351a9ba08e194:T=1536347334:S=ALNI_MbbMZMhTc_K9zjRIl9mXfULbxE6XQ; last_city=90; last_type=0; login_token=cf47e8884526baf9be015fb0e41eeba0c3d7c6b18014df8ba1de55acc997e3f7932012d; dev_ref_no=FPTbO0; PHPSESSID=vhr1qqabb6t6jn8pa27fpi5gd4; OX_plg=swf|wmp|shk|pm; last_cat=0; X-Access-Token=0e23d203c687f84fe9c414bb9b1b53de59aeed2c; X-Refresh-Token=e949824ab71397cefe823a925d64cef00ad079ad; X-Client-Id=wg_desktop_website; X-Dev-Ref-No=FPTbO0; _gid=GA1.2.1174269582.1537624058; open_websocket=yes; conversation_list=; OX_sd=3',
-                'CONSENT=YES+DE.zh-CN+20150622-23-0; NID=139=Xq4f-VHxFzwsiydy4mpVohpciSkLChO9jeYv1dh-HQsu5lV3Qtz4ScYWtpPBBAlv6bJ0mRiAj1YWpifB5YSBrf3B9ek2mQgKI2Uyf9J2iABQJKRJ_3WpliQ2mVz8CD35; 1P_JAR=2018-9-22-18; UULE=a+cm9sZToxIHByb2R1Y2VyOjEyIHByb3ZlbmFuY2U6NiB0aW1lc3RhbXA6MTUzNzY0MTg2MTk3NzAwMCBsYXRsbmd7bGF0aXR1ZGVfZTc6NDgyMTQwMTYwIGxvbmdpdHVkZV9lNzoxMTYxNDYxNzZ9IHJhZGl1czozNjU4MDA=']
-        
-        user_agent = random.choice(user_agents)
+        user_agent = random.choice(self.user_agents_)
         BasicCrawler.history_ua_.append(user_agent)
         
         headers = {'User-Agent': user_agent}
-        headers.update({'Cookie': cookies[1]})
+        headers.update({'Cookie': self.cookies_[1]})
         
         self.headers_ = headers
         return headers
@@ -306,7 +309,7 @@ class BasicCrawlerGroup():
             if task == 'get soup':
                 soups.extend(bc.get_soups(urls))
             elif task == 'save html':
-                bc.save_htmls(urls)
+                bc.is_save_htmls(urls)
         
         if task == 'save html':
             self.rename_crawlers_output()
