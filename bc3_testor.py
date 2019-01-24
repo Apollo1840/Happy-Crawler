@@ -69,11 +69,6 @@ def test_bcg_save_htmls():
     
 if __name__ == '__main__':
     
-    
-    
-    
-    
-    
     # crawler = BasicCrawler()
     # soup = crawler.get_soup('https://www.bbc.com/news')
     # print(soup.find('a'))
@@ -81,6 +76,5 @@ if __name__ == '__main__':
     # bcg_comparison_test()
     # crawler.save_htmls(['https://news.baidu.com' for _ in range(10)])
     test_page= 'https://news.baidu.com'
-    bcg = BasicCrawlerGroup(num_crawler=4, proxies='auto', safetime=(2,2))
-    bcg.rename_crawlers_output()
+    bcg = BasicCrawlerGroup(num_crawler=4, proxies=None, safetime=(2,2))
     bcg.run([test_page for i in range(12)], task='save html')

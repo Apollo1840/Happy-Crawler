@@ -16,6 +16,7 @@ import os
 import time
 import random
 
+import json
 import threading
 
 import pandas as pd
@@ -54,7 +55,9 @@ class BasicCrawler():
         # proxies can be 'auto' or a proxies and a list of proxies
         # safetime: how much time should we wait until next sraping next page
         
-        self.name = random.randint(1000,2000)
+        self.name_ = str(random.randint(1000,2000))
+        self.age_ = 0
+        self.fresh_rate_ = 10  # after how much age, it alters its headers.
         
         if headers =='auto':
             self.generate_headers()            
@@ -81,8 +84,8 @@ class BasicCrawler():
             self.proxies_ = proxies
         
         # other settings
-        self.working_folder_ = 'nest'
-        self.name_page_ = 'web'
+        self.working_folder_ = 'outputs\\nest'
+        self.name_page_ = self.name_
         self.keep_note = False
         self.note_ = {}
         self.safetime = safetime
@@ -105,33 +108,47 @@ class BasicCrawler():
         
         soups = self.get_soups(urls, is_local=is_local)             
         if is_save_html:
-            self.is_save_htmls(urls)
+            self.save_htmls(urls)
             
         if len(soups) == 1: return soups[0]
         else: return soups
     
     
     def get_soup(self, urls, is_local=False):
-        self.run(urls, is_save_html=False, is_local=is_local)
+        return self.run(urls, is_save_html=False, is_local=is_local)
     
     
-    def is_save_html(self, urls):  
+    def save_html(self, urls):  
         if not isinstance(urls,list): urls = [urls]
-        self.is_save_htmls(urls)
+        self.save_htmls(urls)
     
     
-    def get_df(self, urls, func, save_csv=True, path='outputs/'):
-        soups = self.get_soups(urls)
+    def get_df(self, urls, func, save_csv=True, path='outputs/', is_local=False):
+        soups = self.get_soups(urls, is_local=is_local)
         data = [func(soup) for soup in soups]
         df = pd.DataFrame(data)
-        df.to_csv(path+'result.csv')
-        return df   
+        if save_csv:
+            df.to_csv(path+'result.csv')
+        return df
+    
+    def write_tombstone(self):
+        file_name = '{}_{}_note.json'.format(self.name_page_, self.age)
+        with open(self.working_folder_+file_name,'w') as ts:
+            json.dump(self.note_, ts)
+    
+    def read_tombstone(self, file_path):
+        with open(file_path, 'r') as ts:
+            self.note_.update(json.load(ts))
+        # to do: change its name as well
+        
     
     
     # -- build in function
     
     # basics:
     def get(self, url):
+        if self.age_//self.fresh_rate_ == 0:
+            self.generate_headers()
         
         time.sleep(random.randint(*self.safetime))
         
@@ -147,6 +164,7 @@ class BasicCrawler():
                     raise e
                         
         self.response_ = response
+        self.age_ += 1
         return response
     
     
@@ -178,40 +196,39 @@ class BasicCrawler():
     
     def get_soup_trival(self, url, is_local=False):
         if is_local:
-            with open(self.note_[url], 'rb') as f:
-                soup = BeautifulSoup(f,'html5lib')
+            try:
+                with open(self.note_[url], 'rb') as f:
+                    soup = BeautifulSoup(f,'html5lib')
+            except:
+                soup = None               
         else:
             self.get(url)
             soup = BeautifulSoup(self.response_.text,'lxml')
         return soup
     
 
-    def is_save_htmls(self, urls):
-        i = 0
-        self.name_page_ += str(i)
+    def save_htmls(self, urls):
         for url in urls:
-            # print(i)
-            i += 1
             self.get(url)
-            self.name_page_ = self.name_page_[:-1] + str(i)
-            self.is_save_html_single()
+            self.save_html_single()
      
         
-    def is_save_html_single(self):
+    def save_html_single(self):
         # use get() first, note: get_soup() contains get()
         
-        working_folder = 'outputs/{}'.format(self.working_folder_)
+        working_folder = self.working_folder_
+        
         if not os.path.exists(working_folder):
             os.makedirs(working_folder)
-        save_path = '{}/{}.html'.format(working_folder, self.name_page_)    
+            
+        save_path = '{}/{}_{}.html'.format(working_folder, self.name_page_, self.age_)    
         
         self.response_.encoding='utf-8'
-        with open('outputs/page.txt','w', encoding="utf-8") as f:
+        with open(save_path,'w', encoding="utf-8") as f:
             f.write(self.response_.text)
-        os.rename('outputs/page.txt', save_path)
         
         if self.keep_note:
-            self.note.update({self.response_.url : save_path})
+            self.note_.update({self.response_.url : save_path})
     
     def generate_headers(self):
         user_agent = random.choice(self.user_agents_)
@@ -225,17 +242,17 @@ class BasicCrawler():
     
     
     def generate_proxies(self): 
-        print('{} generate proxies'.format(self.name))
+        print('{} generate proxies'.format(self.name_))
         
         while len(self.proxies_list_) <= 0:
             print('creat list\n')
             self.create_proxies_list()
-            print('{} remain_ips:{}'.format(self.name, len(self.proxies_list_))) 
+            print('{} remain_ips:{}'.format(self.name_, len(self.proxies_list_))) 
             
-        assert len(self.proxies_list_)>0, self.name
+        assert len(self.proxies_list_)>0, self.name_
         
         self.proxies_ = self.proxies_list_.pop(0)
-        print('{} remain_ips:{}'.format(self.name, len(self.proxies_list_)))        
+        print('{} remain_ips:{}'.format(self.name_, len(self.proxies_list_)))        
     
     
     def create_proxies_list(self, proxies = None, headers = None):
@@ -276,7 +293,7 @@ class BasicCrawler():
         proxies_list = [modify_proxies(proxy) for proxy in proxies_list_raw]
         
         self.proxies_list_.extend(list(filter(None, proxies_list)))
-        return self.proxies_list_            
+        return self.proxies_list_       
     
             
 
@@ -296,7 +313,7 @@ class BasicCrawlerGroup():
         for i in range(num_crawler):
             bc = BasicCrawler(headers=headers, proxies=main_proxies_list[i], api_ID=api_ID, num_proxies=num_proxies, safetime=safetime)
             bc.hide_ip = True
-            print(bc.name)
+            print(bc.name_)
             self.crawlers.append(bc)  
             
         print('\n ----- crawler group ready  ---- \n')  
@@ -304,12 +321,12 @@ class BasicCrawlerGroup():
     
     def run(self, urls, task='get soup'):
         def action(bc, urls):
-            print('crawler {} is working now...'.format(bc.name))
+            print('crawler {} is working now...'.format(bc.name_))
             
             if task == 'get soup':
                 soups.extend(bc.get_soups(urls))
             elif task == 'save html':
-                bc.is_save_htmls(urls)
+                bc.save_htmls(urls)
         
         if task == 'save html':
             self.rename_crawlers_output()
@@ -326,6 +343,7 @@ class BasicCrawlerGroup():
                 t.start()
         for t in thread_list:
             t.join()
+            
         
         return soups
         
@@ -333,7 +351,9 @@ class BasicCrawlerGroup():
     def rename_crawlers_output(self):
         i = 0
         for crawler in self.crawlers:
-            crawler.name_page_ += '_{}_'.format(i)
+            # i is the group id
+            
+            crawler.name_page_ = '{}_'.format(i) + crawler.name_page_
             i += 1
             
  

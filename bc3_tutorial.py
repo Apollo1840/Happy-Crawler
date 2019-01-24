@@ -35,22 +35,23 @@ print([soup.title.text for soups in soups])
 
 # furthermore, you can define how do you save
 bc.working_folder_ = 'my_working_folder'
-bc.name_page_ = 'the_page'
+bc.name_page_ = 'the_page'  # default to be the name of the crawler
 bc.run(test_url, is_save_html=True)
 
 # of course, you can disable the save html function
 soup = bc.run(test_url, is_save_html=False)  # it is True by default
+# the reason for that is for local bootstraping
 
 
 # --------------------------------------
-# 1. get_soup and is_save_html
+# 1. get_soup and save_html
 # if you do not like the run API, there is a more comprehensive way to use BasicCrawler
 
 soup = bc.get_soup(test_url)  # this is equal to bc.run(test_url, is_save_html=False)
 soups = bc.get_soup(test_urls)
 # or
-bc.is_save_html(test_url)
-bc.is_save_html(test_urls)
+bc.save_html(test_url)
+bc.save_html(test_urls)
 
 
 # --------------------------------------
@@ -84,4 +85,66 @@ bc = BasicCrawler(proxies='auto', api_ID_='869291819078202384', num_proxies=20)
 
 # --------------------------------------
 # 3, local working flow
+
+# assume we already got html files locally
+# and those htmls is scraping by this crawler, which means we got .note in this crawler 
+
+# we can use .run() or .get_soup() easily:
+
+bc = BasicCrawler()
+bc.keep_note = True
+bc.save_html(test_urls)
+
+bc.run(test_urls, is_local=True)
+bc.get_soup(test_urls, is_local=True)
+
+# how to produce note for next BasicCrawler?
+bc = BasicCrawler()
+bc.keep_note = True
+bc.save_html(test_urls)
+bc.write_tombstone()
+
+bc2 = BasicCrawler()
+bc.read_tombstone('1234_20_note.json')
+bc.run(test_urls, is_local=True)
+
+
+#----------------------------------------------
+# aggragate the crawler with the tasks
+
+class TitleCrawler(BasicCrawler):
+    def __init__(self):
+        super().__init__()
+    
+    def work_on(self, urls, is_local=False, save_csv=False):
+        return self.get_df(urls, self.getWebTitle, save_csv=save_csv, is_local=is_local)
+        
+    @staticmethod
+    def getWebTitle(soup):
+        '''
+            get the web title of the soup
+        '''
+        
+        # input as soup, output as what you want as a list or tuple
+        
+        try:
+            title = soup.title.string
+        except:
+            title = None
+            
+        return title 
+        
+
+tc = TitleCrawler()
+df = tc.work_on(test_urls)
+print(df)
+
+# you can also ask it to work locally.
+tc.work_on(test_urls, is_local=True)
+# but tc has to have note first.
+# us tc.save_html() or tc.read_tombstone
+ 
+
+#----------------------------------------------
+# BasicCrawlerGroup
 

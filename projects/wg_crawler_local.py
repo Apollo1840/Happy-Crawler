@@ -137,7 +137,7 @@ class WgSpider_local(WgSpider):
 
 
 
-def make_wg_gesucht_offline(start_page=1, end_page=10, proxies='auto'):
+def make_wg_gesucht_offline(start_page=1, end_page=10, proxies=None):
     
         for i in range(start_page-1, end_page):
                   
@@ -191,7 +191,7 @@ if __name__ == '__main__':
     t0 = time.time()
     
     wc = WgCrawler()
-    wc.run_simple(end_page=12)
+    wc.run_simple(end_page=3)
     print(wc.df)
     
     print('spend {}s'.format(time.time()-t0))
