@@ -104,6 +104,7 @@ class BasicCrawler():
         
         '''
         
+        if is_local: is_save_html=False
         if not isinstance(urls,list): urls = [urls]
         
         soups = self.get_soups(urls, is_local=is_local)             
@@ -132,11 +133,12 @@ class BasicCrawler():
         return df
     
     def write_tombstone(self):
-        file_name = '{}_{}_note.json'.format(self.name_page_, self.age)
-        with open(self.working_folder_+file_name,'w') as ts:
+        file_name = '{}_{}_note.json'.format(self.name_page_, self.age_)
+        with open(self.working_folder_+ "\\" + file_name,'w') as ts:
             json.dump(self.note_, ts)
     
-    def read_tombstone(self, file_path):
+    def read_tombstone(self, file_path, is_abs_path=False):
+        if not is_abs_path: file_path = self.working_folder_ + "\\" + file_path 
         with open(file_path, 'r') as ts:
             self.note_.update(json.load(ts))
         # to do: change its name as well
@@ -298,42 +300,70 @@ class BasicCrawler():
             
 
             
-
+from threading import Lock
 
 
 class BasicCrawlerGroup():
     
-    def __init__(self, num_crawler=2, headers=None, proxies=None, api_ID='869291819078202384', num_proxies = 20, safetime=(0,0)):
-        self.crawlers=[]
-        self.main_crawler = BasicCrawler(headers=headers, proxies=proxies, api_ID=api_ID, num_proxies=num_proxies*num_crawler, safetime=safetime)
+    def __init__(self, num_crawler=2, main_crawler = None, **kwargs):
+        self.crawlers = []
+        self.keep_note = False
+        self.note_ = {}
+        
+        if main_crawler is None:
+            self.main_crawler = BasicCrawler(**kwargs)
+        else:
+            self.main_crawler = main_crawler
         
         main_proxies_list = cut_list(self.main_crawler.proxies_list_, num_crawler)
         # cut_list will cut the list into several parts (roughly equal length)
         
         for i in range(num_crawler):
-            bc = BasicCrawler(headers=headers, proxies=main_proxies_list[i], api_ID=api_ID, num_proxies=num_proxies, safetime=safetime)
+            
+            # to do: it should the copy of main_crawler
+            bc = BasicCrawler(proxies=main_proxies_list[i], **kwargs)
+            bc.working_folder_ = self.main_crawler.working_folder_
+            
+            # to do: make sub_crawlers wait if it could not get ip
             bc.hide_ip = True
-            print(bc.name_)
+            
+            # print(bc.name_)
             self.crawlers.append(bc)  
             
         print('\n ----- crawler group ready  ---- \n')  
+        
     
     
-    def run(self, urls, task='get soup'):
+    def run(self, urls, task='get soup', is_local=False):
+        # ----------------------------------------   
+        # a helper function:
         def action(bc, urls):
             print('crawler {} is working now...'.format(bc.name_))
             
             if task == 'get soup':
-                soups.extend(bc.get_soups(urls))
+                new_soups = bc.get_soups(urls, is_local=is_local)
+                self.lock.acquire()
+                soups.extend(new_soups)
+                self.lock.release()
+                
             elif task == 'save html':
                 bc.save_htmls(urls)
+                if self.keep_note:
+                    bc.write_tombstone()
         
         if task == 'save html':
             self.rename_crawlers_output()
+        # ----------------------------------------    
 
+        if task=="get soup" and is_local==True: 
+            self.read_all_tombstone()
+            for bc in self.crawlers:
+                bc.note_ = self.note_
+                
         urls_parts = cut_list(urls, len(self.crawlers))
         soups = []
         thread_list=[]
+        self.lock = Lock()
         for i in range(len(self.crawlers)):
                 t = threading.Thread(target=action, 
                                      name='worker_{}'.format(i), 
@@ -346,8 +376,18 @@ class BasicCrawlerGroup():
             
         
         return soups
+
+
+    def get_df(self, urls, func, save_csv=True, path='outputs/', is_local=False):
+        self.run(urls, "save html")
+        soups =  self.run(urls, "get soup", is_local = True)
+        data = [func(soup) for soup in soups]
+        df = pd.DataFrame(data)
+        if save_csv:
+            df.to_csv(path+'result.csv')
+        return df
         
-    
+        
     def rename_crawlers_output(self):
         i = 0
         for crawler in self.crawlers:
@@ -356,7 +396,14 @@ class BasicCrawlerGroup():
             crawler.name_page_ = '{}_'.format(i) + crawler.name_page_
             i += 1
             
- 
+    def read_all_tombstone(self, file_path="", is_abs_path=False):
+        if not is_abs_path: file_path = self.main_crawler.working_folder_  + "\\" + file_path
+        paths = os.listdir(file_path)
+        for f in paths:
+            if f.endswith(".json"):
+                with open(file_path + f, 'r') as ts:
+                    self.note_.update(json.load(ts))
+        
            
 # math-tools
 import math
@@ -371,7 +418,7 @@ def cut_range(a, b, bins):
     return result
 
 def cut_list(the_list, bins):
-    if len(the_list) < bins:
+    if the_list is None or len(the_list) < bins:
         return [None for _ in range(bins)]  # it is important to have None here (for proxies management)
     
     num_last = len(the_list)%bins

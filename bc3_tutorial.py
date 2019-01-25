@@ -19,15 +19,15 @@ from bc3 import BasicCrawler
   
 '''
 
+# input as urls
 test_url = 'https://www.google.com'
+test_urls = [test_url for _ in range(5)]
+
+
 
 bc = BasicCrawler()
 soup = bc.run(test_url)
 print(soup.title.text)
-
-# input as urls
-test_url = 'https://www.google.com'
-test_urls = [test_url for _ in range(5)]
 
 soups = bc.run(test_urls)
 print([soup.title.text for soups in soups])
@@ -95,8 +95,9 @@ bc = BasicCrawler()
 bc.keep_note = True
 bc.save_html(test_urls)
 
-bc.run(test_urls, is_local=True)
-bc.get_soup(test_urls, is_local=True)
+soup = bc.run(test_urls, is_local=True)
+soups = bc.get_soup(test_urls, is_local=True)
+# [soup.title.text for soup in soups]
 
 # how to produce note for next BasicCrawler?
 bc = BasicCrawler()
@@ -105,9 +106,9 @@ bc.save_html(test_urls)
 bc.write_tombstone()
 
 bc2 = BasicCrawler()
-bc.read_tombstone('1234_20_note.json')
-bc.run(test_urls, is_local=True)
-
+bc.read_tombstone('1598_5_note.json')
+soups = bc.run(test_urls, is_local=True)
+# [soup.title.text for soup in soups]
 
 #----------------------------------------------
 # aggragate the crawler with the tasks
@@ -140,11 +141,75 @@ df = tc.work_on(test_urls)
 print(df)
 
 # you can also ask it to work locally.
-tc.work_on(test_urls, is_local=True)
-# but tc has to have note first.
-# us tc.save_html() or tc.read_tombstone
+tc.save_html(test_urls) # or tc.read_tombstone()
  
+tc.work_on(test_urls, is_local=True)
+
 
 #----------------------------------------------
 # BasicCrawlerGroup
+
+
+from bc3 import BasicCrawlerGroup
+
+# firstly, we can understand BasicCrawlerGroup as a faster version of BasicCrawler
+
+crawlers = BasicCrawlerGroup(num_crawler=2)  # 2 is default
+soups = crawlers.run(test_urls)
+    
+for soup in soups:
+    print(soup.title.text)
+    
+# BasicCrawlerGroup can not deal with single url, number of urls must be suffient enough.
+
+bc = BasicCrawler()
+bc.working_folder_ = 'outputs\\nest'
+bcg = BasicCrawlerGroup(2, bc)
+soups = bcg.run(test_urls)
+    
+for soup in soups:
+    print(soup.title.text)
+
+
+
+# local working
+    
+bcg = BasicCrawlerGroup(2, bc)
+bcg.keep_note = True
+soups = bcg.run(test_urls, "save html")
+soups =  bcg.run(test_urls, "get soup", is_local = True)
+
+
+for soup in soups:
+    print(soup.title.text)
+
+
+
+# aggragete bcg
+    
+class TitleCrawlers(BasicCrawlerGroup):
+    def __init__(self):
+        super().__init__()
+    
+    def work_on(self, urls, is_local=False, save_csv=False):
+        return self.get_df(urls, self.getWebTitle, save_csv=save_csv, is_local=is_local)
+        
+    @staticmethod
+    def getWebTitle(soup):
+        '''
+            get the web title of the soup
+        '''
+        
+        # input as soup, output as what you want as a list or tuple
+        
+        try:
+            title = soup.title.string
+        except:
+            title = None
+            
+        return title
+
+tc = TitleCrawlers()
+df = tc.work_on(test_urls)
+print(df)
 
