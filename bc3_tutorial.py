@@ -173,12 +173,20 @@ for soup in soups:
 
 
 # local working
-    
+
+# first we need to do some preparation (to get notes)
 bcg = BasicCrawlerGroup(2, bc)
 bcg.keep_note = True
 soups = bcg.run(test_urls, "save html")
-soups =  bcg.run(test_urls, "get soup", is_local = True)
 
+# after that we can get the notes
+bcg.read_all_tombstone()
+# or bcg.read_all_tombstone("...", is_abs_path=True) 
+soups =  bcg.run(test_urls, "get soup", is_local = True, has_note=True)
+
+# or we could directly use:
+soups =  bcg.run(test_urls, "get soup", is_local = True)
+# it will read all tombstone automatically
 
 for soup in soups:
     print(soup.title.text)
@@ -193,7 +201,7 @@ class TitleCrawlers(BasicCrawlerGroup):
     
     def work_on(self, urls, is_local=False, save_csv=False):
         return self.get_df(urls, self.getWebTitle, save_csv=save_csv, is_local=is_local)
-        
+    
     @staticmethod
     def getWebTitle(soup):
         '''
@@ -211,5 +219,12 @@ class TitleCrawlers(BasicCrawlerGroup):
 
 tc = TitleCrawlers()
 df = tc.work_on(test_urls)
+print(df)
+
+# locally:
+tc = TitleCrawlers()
+tc.keep_note = True
+tc.run(test_urls, "save html")
+df = tc.work_on(test_urls, is_local=True)
 print(df)
 

@@ -334,7 +334,7 @@ class BasicCrawlerGroup():
         
     
     
-    def run(self, urls, task='get soup', is_local=False):
+    def run(self, urls, task='get soup', is_local=False, has_note=False):
         # ----------------------------------------   
         # a helper function:
         def action(bc, urls):
@@ -355,10 +355,8 @@ class BasicCrawlerGroup():
             self.rename_crawlers_output()
         # ----------------------------------------    
 
-        if task=="get soup" and is_local==True: 
+        if task=="get soup" and is_local and not has_note: 
             self.read_all_tombstone()
-            for bc in self.crawlers:
-                bc.note_ = self.note_
                 
         urls_parts = cut_list(urls, len(self.crawlers))
         soups = []
@@ -379,15 +377,13 @@ class BasicCrawlerGroup():
 
 
     def get_df(self, urls, func, save_csv=True, path='outputs/', is_local=False):
-        self.run(urls, "save html")
         soups =  self.run(urls, "get soup", is_local = True)
         data = [func(soup) for soup in soups]
         df = pd.DataFrame(data)
         if save_csv:
             df.to_csv(path+'result.csv')
         return df
-        
-        
+    
     def rename_crawlers_output(self):
         i = 0
         for crawler in self.crawlers:
@@ -403,6 +399,8 @@ class BasicCrawlerGroup():
             if f.endswith(".json"):
                 with open(file_path + f, 'r') as ts:
                     self.note_.update(json.load(ts))
+        for bc in self.crawlers:
+            bc.note_ = self.note_
         
            
 # math-tools
