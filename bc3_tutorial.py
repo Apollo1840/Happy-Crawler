@@ -114,8 +114,8 @@ soups = bc.run(test_urls, is_local=True)
 # aggragate the crawler with the tasks
 
 class TitleCrawler(BasicCrawler):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     
     def work_on(self, urls, is_local=False, save_csv=False):
         return self.get_df(urls, self.getWebTitle, save_csv=save_csv, is_local=is_local)
@@ -190,13 +190,15 @@ soups =  bcg.run(test_urls, "get soup", is_local = True)
 for soup in soups:
     print(soup.title.text)
 
+# to do: examine whether bcg.get_soup() and bcg.save_html() also works
+
 
 
 # aggragete bcg
     
 class TitleCrawlers(BasicCrawlerGroup):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
     
     def work_on(self, urls, is_local=False, save_csv=False):
         return self.get_df(urls, self.getWebTitle, save_csv=save_csv, is_local=is_local)
