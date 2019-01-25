@@ -307,7 +307,7 @@ class BasicCrawlerGroup():
     
     def __init__(self, num_crawler=2, main_crawler = None, **kwargs):
         self.crawlers = []
-        self.keep_note = False
+        self.keep_note = True
         self.note_ = {}
         
         if main_crawler is None:

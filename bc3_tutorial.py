@@ -176,7 +176,6 @@ for soup in soups:
 
 # first we need to do some preparation (to get notes)
 bcg = BasicCrawlerGroup(2, bc)
-bcg.keep_note = True
 soups = bcg.run(test_urls, "save html")
 
 # after that we can get the notes
@@ -219,12 +218,13 @@ class TitleCrawlers(BasicCrawlerGroup):
 
 tc = TitleCrawlers()
 df = tc.work_on(test_urls)
+
 print(df)
 
 # locally:
 tc = TitleCrawlers()
-tc.keep_note = True
 tc.run(test_urls, "save html")
 df = tc.work_on(test_urls, is_local=True)
+
 print(df)
 
